@@ -1,0 +1,24 @@
+{
+	"ts-node": {
+		"transpileOnly": true
+	},
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es2018",
+		"sourceMap": true,
+		"mapRoot": "built",
+		"outDir": "built",
+		"types": [
+			"node",
+			"mocha"
+		],
+		"experimentalDecorators": true,
+		"lib": [
+			"dom",
+			"es2018"
+		]
+	},
+	"exclude": [
+		"node_modules"
+	]
+}
