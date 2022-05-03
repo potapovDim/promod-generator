@@ -45,7 +45,11 @@ const baseResultActionTypeMap = {
   waitForContentState: 'void',
 };
 
+const baseActions = new Set(['Action', 'GetRes', 'IsDispRes', 'Visibility', 'SendKeys', 'Content']);
+
 const pathToLibrary = 'lib';
+
+const actionWaitOpts = new Set(['waitForVisibilityState', 'waitForContentState']);
 
 export {
   allBaseElements,
@@ -55,4 +59,6 @@ export {
   pathToLibrary,
   baseActionToTypeMap,
   baseResultActionTypeMap,
+  actionWaitOpts,
+  baseActions,
 };

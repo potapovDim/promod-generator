@@ -1,10 +1,12 @@
 // TODO actions list more flexible way
-const actions = new Set(['Action', 'GetRes', 'IsDispRes', 'Visibility', 'SendKeys', 'Content']);
+import { getConfiguration } from './config';
 
 function createType(
   itemObject: Array<{ [k: string]: { [k: string]: string } }> | { [k: string]: string },
   action = 'Action',
 ) {
+  const { actions } = getConfiguration();
+
   const isObjectWithAction = Object.keys(itemObject).every(key => actions.has(key));
 
   if (isObjectWithAction) {

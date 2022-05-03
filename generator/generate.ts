@@ -2,26 +2,18 @@
 import * as path from 'path';
 import * as fs from 'fs';
 
-const camelize = str =>
-  str
-    .replace(/^\w|[A-Z]|\b\w/g, function (word, index) {
-      return index === 0 ? word.toLowerCase() : word.toUpperCase();
-    })
-    .replace(/\s+/g, '');
-
 import { getElementsTypes, createTypeForFragment } from './get.instance.elements.type';
 import { sendKeysElement, systemProps, clickElements } from './base';
 import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
 import { getBaseImport } from './get.base.import';
 import { findAllBaseElements } from './get.base.elements';
 import { getConfiguration } from './config';
-
-const actionWaitOpts = ['waitForVisibilityState', 'waitForContentState'];
+import { camelize } from './utils';
 
 const flowMatcher = /(?<=const ).*(?= = async)/gim;
 
 const createFlowTemplates = (name, action, field, instance) => {
-  const { actionToTypeMap, resultActionsMap } = getConfiguration();
+  const { actionToTypeMap, resultActionsMap, actionWithWaitOpts } = getConfiguration();
 
   const flowArgumentType = createTypeForFragment(instance, actionToTypeMap[action]);
   const flowResultType =
@@ -29,10 +21,10 @@ const createFlowTemplates = (name, action, field, instance) => {
 
   return `type T${camelize(`${field}${action}`)} = ${flowArgumentType}
 const ${name} = async function(data: T${camelize(`${field}${action}`)}${
-    actionWaitOpts.includes(action) ? ', opts?: IWaitOpts' : ''
+    actionWithWaitOpts.includes(action) ? ', opts?: IWaitOpts' : ''
   }): Promise<${flowResultType}> {
   ${resultActionsMap[action] === 'void' ? 'return' : `const { ${field} } =`} await page.${action}({ ${field}: data }${
-    actionWaitOpts.includes(action) ? ', opts' : ''
+    actionWithWaitOpts.includes(action) ? ', opts' : ''
   });${resultActionsMap[action] === 'void' ? '' : `\n\n\treturn ${field};`}
 };`;
 };
