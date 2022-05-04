@@ -1,10 +1,11 @@
 import { getConfiguration } from './config';
 
 const getElementType = elementName => {
-  const { baseElementsWithSendKeysAction } = getConfiguration();
+  const { sendKeysElements } = getConfiguration();
+  // TODO Collection flexible types
   const baseAllTypes = `${elementName}Action, ${elementName}GetRes, ${elementName}IsDispRes,`;
 
-  return baseElementsWithSendKeysAction.has(elementName) ? `${baseAllTypes} ${elementName}SendKeys,` : baseAllTypes;
+  return sendKeysElements.has(elementName) ? `${baseAllTypes} ${elementName}SendKeys,` : baseAllTypes;
 };
 
 const getBaseImport = baseElements => {

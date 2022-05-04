@@ -1,10 +1,11 @@
-/* eslint-disable sonarjs/prefer-immediate-return, complexity, sonarjs/cognitive-complexity*/
-import { systemProps, allBaseElements } from './base';
+/* eslint-disable complexity, sonarjs/cognitive-complexity*/
+import { getConfiguration } from './config';
 
 function checkThatFragmentHasItemsToAction(instance, actionElements = new Set()) {
+  const { systemPropsList, baseElementsList } = getConfiguration();
   const fragment = instance;
 
-  if (fragment.constructor.name === 'Collection' && actionElements === allBaseElements) {
+  if (fragment.constructor.name === 'Collection' && actionElements === baseElementsList) {
     return true;
   }
 
@@ -13,8 +14,7 @@ function checkThatFragmentHasItemsToAction(instance, actionElements = new Set())
   }
 
   const pageFragments = Object.getOwnPropertyNames(fragment);
-
-  const interactionFields = pageFragments.filter(item => !systemProps.has(item));
+  const interactionFields = pageFragments.filter(item => !systemPropsList.has(item));
 
   for (const fragmentChildFieldName of interactionFields) {
     const childConstructorName = fragment[fragmentChildFieldName].constructor.name;

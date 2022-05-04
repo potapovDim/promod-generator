@@ -12,11 +12,13 @@ const { hideBin } = require('yargs/helpers');
 const argv = yargs(hideBin(process.argv)).argv;
 
 const { createPageStructure } = require('../built/generate');
+const { createPageStructure } = require('../built/config.template');
 
 if (argv.clihelp) {
   console.info(`
     Usage:
       --clihelp - get usage description
+      --generate-config - generate base config
       --file="/path/to/page.ts" - generate actions for required page
   `);
   process.exit(0);
