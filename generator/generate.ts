@@ -25,8 +25,13 @@ const createPageStructure = (pagePath: string) => {
   const pageModule = require(pagePath);
 
   const PageClass = Object.values(pageModule as { [k: string]: any }).find(exportedItem =>
-    exportedItem.constructor.name.includes(baseLibraryDescription.pageId),
+    exportedItem.name.includes(baseLibraryDescription.pageId),
   );
+
+  if (!PageClass) {
+    throw new Error(`Page Class was not found. Search pattern is '${baseLibraryDescription.pageId}'`);
+  }
+
   const pageInstance = new PageClass();
 
   const globalImport = `import {
