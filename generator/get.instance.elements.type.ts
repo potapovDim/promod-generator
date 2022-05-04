@@ -1,178 +1,163 @@
-/* eslint-disable unicorn/prefer-switch, no-use-before-define, sonarjs/no-identical-functions, sonarjs/cognitive-complexity */
+/* eslint-disable unicorn/prefer-switch, no-use-before-define, sonarjs/cognitive-complexity */
 import { createType } from './create.type';
 import { getConfiguration } from './config';
 import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
 
-function getCollectionTypes(instance, action, actionElements) {
-  const { baseElementsList, sendKeysElements } = getConfiguration();
+function getCollectionTypes(instance, action, actionType) {
+  const { resultActionsMap, baseElementsActionsDescription, collectionWaitingTypes, baseLibraryDescription } =
+    getConfiguration();
 
-  const collectionsItem = new instance.InstanceType(
-    instance.rootLocator,
-    instance.identifier,
+  if (resultActionsMap[action] === 'void' && actionType === 'resultType') return 'void';
+
+  const collectionsItem = new instance[baseLibraryDescription.collectionItemId](
+    instance[baseLibraryDescription.rootLocatorId],
+    instance[baseLibraryDescription.entityId],
     instance.rootElements.get(0),
   );
 
-  const getTypeHandler = baseElementsList.has(collectionsItem.constructor.name)
+  if (!checkThatFragmentHasItemsToAction(collectionsItem, action)) {
+    return '';
+  }
+
+  const getTypeHandler = baseElementsActionsDescription[collectionsItem.constructor.name]
     ? getElementType
     : createTypeForFragment;
 
   const types = {};
-  if (action === 'SendKeys' && !checkThatFragmentHasItemsToAction(collectionsItem, sendKeysElements)) {
-    return createType(types, action);
-  }
 
-  if (action === 'Action' || action === 'SendKeys') {
-    types[action] = `ICollectionAction<${getTypeHandler(collectionsItem, 'GetRes', actionElements)}, ${getTypeHandler(
+  if (collectionWaitingTypes[action]) {
+    const { where, action: proxyAction, compare } = collectionWaitingTypes[action];
+    types[action] = `ICollectionCheck<
+    ${getTypeHandler(collectionsItem, where, 'resultType')},
+    ${getTypeHandler(collectionsItem, proxyAction, 'entryType')},
+    ${getTypeHandler(collectionsItem, compare, 'resultType')}
+  > | ${getTypeHandler(collectionsItem, where, 'resultType')} | ${getTypeHandler(
+      collectionsItem,
+      where,
+      'resultType',
+    )}[]`;
+  } else {
+    types[action] = `ICollectionAction<${getTypeHandler(collectionsItem, action, 'resultType')}, ${getTypeHandler(
       collectionsItem,
       action,
-      actionElements,
+      'entryType',
     )}>`;
-  } else if (action === 'GetRes' || action === 'IsDispRes') {
-    types[action] = `${getTypeHandler(collectionsItem, action, actionElements)}[]`;
-  } else if (action === 'Visibility' || action === 'Content') {
-    const proxyAction = action === 'Visibility' ? 'IsDispRes' : 'GetRes';
-    types[action] = `ICollectionCheck<
-    ${getTypeHandler(collectionsItem, 'GetRes', actionElements)},
-    ${getTypeHandler(collectionsItem, 'Action', actionElements)},
-    ${getTypeHandler(collectionsItem, proxyAction, actionElements)}
-  > | ${getTypeHandler(collectionsItem, proxyAction, actionElements)} | ${getTypeHandler(
-      collectionsItem,
-      proxyAction,
-      actionElements,
-    )}[]`;
   }
 
   return createType(types, action);
 }
 
-function createTypeForFragment(del, action = 'Action', actionElements) {
-  const { baseElementsList, sendKeysElements, systemPropsList } = getConfiguration();
-  if (action === 'void') {
-    return action;
-  }
+function createTypeForFragment(del, action, actionType) {
+  const {
+    resultActionsMap,
+    systemPropsList,
+    baseElementsActionsDescription,
+    collectionWaitingTypes,
+    baseLibraryDescription,
+    collectionActionTypes,
+  } = getConfiguration();
+
+  if (resultActionsMap[action] === 'void' && actionType === 'resultType') return 'void';
 
   if (del.constructor.name === 'Collection') {
-    return getCollectionTypes(del, action, actionElements);
+    return getCollectionTypes(del, action, actionType);
   }
 
-  const instanceOwnKeys = Object.getOwnPropertyNames(del).filter(key => !systemPropsList.has(key));
+  const instanceOwnKeys = Object.getOwnPropertyNames(del).filter(key => !systemPropsList.includes(key));
 
   const fragmentElements = instanceOwnKeys
     .filter(itemFiledName => {
       const prop = del[itemFiledName].constructor.name;
 
-      return baseElementsList.has(prop);
+      return baseElementsActionsDescription[prop];
     })
-    .map(itemFiledName => {
-      const prop = del[itemFiledName].constructor.name;
-
-      const isSendKeys = sendKeysElements.has(prop);
-
-      const types = {
-        [itemFiledName]: {
-          Action: `${prop}Action`,
-          GetRes: `${prop}GetRes`,
-          IsDispRes: `${prop}IsDispRes`,
-          Visibility: `${prop}IsDispRes`,
-          Content: `${prop}GetRes`,
-        },
-      };
-
-      if (isSendKeys) {
-        // @ts-ignore
-        types[itemFiledName].SendKeys = `${prop}SendKeys`;
-      }
-
-      return types;
-    });
+    .map(itemFiledName => ({ [itemFiledName]: getElementType(del[itemFiledName], action, actionType) }));
 
   const fragmentFragments = instanceOwnKeys
-    .filter(itemFiledName => del[itemFiledName].constructor.name.includes('Fragment'))
+    .filter(itemFiledName => del[itemFiledName].constructor.name.includes(baseLibraryDescription.fragmentId))
     .map(itemFiledName => {
-      const types = { [itemFiledName]: {} };
-      if (action === 'SendKeys' && !checkThatFragmentHasItemsToAction(del[itemFiledName], sendKeysElements)) {
-        return types;
-      } else {
-        types[itemFiledName][action] = createTypeForFragment(del[itemFiledName], action, actionElements);
+      const types = {};
+
+      if (checkThatFragmentHasItemsToAction(del[itemFiledName], action)) {
+        types[itemFiledName][action] = createTypeForFragment(del[itemFiledName], action, actionType);
       }
 
       return types;
     });
-  const fragmentArrayFragments = instanceOwnKeys
-    .filter(itemFiledName => {
-      const prop = del[itemFiledName].constructor.name;
 
-      return prop === 'Collection';
-    })
-    .filter(itemFiledName => del[itemFiledName].InstanceType.name.includes('Fragment'))
+  const fragmentArrayFragments = instanceOwnKeys
+    .filter(itemFiledName => del[itemFiledName].constructor.name === baseLibraryDescription.collectionId)
+    .filter(itemFiledName =>
+      del[itemFiledName][baseLibraryDescription.collectionItemId].name.includes(baseLibraryDescription.fragmentId),
+    )
     .map(itemFiledName => {
       const collectionsItem = new del[itemFiledName].InstanceType(
         del[itemFiledName].rootLocator,
         del[itemFiledName].identifier,
         del[itemFiledName].rootElements.get(0),
       );
-      const types = { [itemFiledName]: {} };
+      const types = {};
 
-      if (action === 'Action') {
-        types[itemFiledName][action] = `ICollectionAction<${createTypeForFragment(
-          collectionsItem,
-          'GetRes',
-          actionElements,
-        )}, ${createTypeForFragment(collectionsItem, 'Action', actionElements)}>`;
-      } else if (action === 'GetRes' || action === 'IsDispRes') {
-        types[itemFiledName][action] = `${createTypeForFragment(collectionsItem, 'action', actionElements)}[]`;
-      } else if (action === 'Visibility' || action === 'Content') {
-        const proxyAction = action === 'Visibility' ? 'IsDispRes' : 'GetRes';
-        types[itemFiledName][action] = `ICollectionCheck<
-        ${createTypeForFragment(collectionsItem, 'GetRes', actionElements)},
-        ${createTypeForFragment(collectionsItem, 'Action', actionElements)},
-        ${createTypeForFragment(collectionsItem, proxyAction, actionElements)}
-      > | ${createTypeForFragment(collectionsItem, proxyAction, actionElements)} | ${createTypeForFragment(
-          collectionsItem,
-          proxyAction,
-          actionElements,
-        )}[]`;
+      if (!checkThatFragmentHasItemsToAction(collectionsItem, action)) {
+        return types;
       }
 
-      if (action === 'SendKeys' && checkThatFragmentHasItemsToAction(collectionsItem, sendKeysElements)) {
-        // @ts-ignore
-        types[itemFiledName].SendKeys = `ICollectionAction<${createTypeForFragment(
-          collectionsItem,
-          'GetRes',
-          actionElements,
-        )}, ${createTypeForFragment(collectionsItem, 'SendKeys', actionElements)}>`;
+      if (collectionWaitingTypes[action]) {
+        const { where, action: proxyAction, compare } = collectionWaitingTypes[action];
+        types[itemFiledName] = {
+          [action]: `ICollectionCheck<
+        ${createTypeForFragment(collectionsItem, where, 'resultType')},
+        ${createTypeForFragment(collectionsItem, proxyAction, 'entryType')},
+        ${createTypeForFragment(collectionsItem, compare, 'resultType')}
+      > | ${createTypeForFragment(collectionsItem, where, 'resultType')} | ${createTypeForFragment(
+            collectionsItem,
+            where,
+            'resultType',
+          )}[]`,
+        };
+      } else {
+        const { where, action: proxyAction } = collectionActionTypes[action];
+        types[itemFiledName] = {
+          [action]: `ICollectionAction<${createTypeForFragment(
+            collectionsItem,
+            where,
+            'resultType',
+          )}, ${createTypeForFragment(collectionsItem, proxyAction, 'entryType')}>`,
+        };
       }
 
       return types;
     });
 
   const fragmentArrayElements = instanceOwnKeys
-    .filter(itemFiledName => {
-      const prop = del[itemFiledName].constructor.name;
-
-      return prop === 'Collection';
-    })
-    .filter(itemFiledName => {
-      const prop = del[itemFiledName].InstanceType.prototype.constructor.name;
-
-      return baseElementsList.has(prop);
-    })
+    .filter(itemFiledName => del[itemFiledName].constructor.name === baseLibraryDescription.collectionId)
+    .filter(itemFiledName => baseElementsActionsDescription[del[itemFiledName].InstanceType.name])
     .map(itemFiledName => {
-      const prop = del[itemFiledName].InstanceType.prototype.constructor.name;
-      const isSendKeys = sendKeysElements.has(prop);
-      const types = {
-        [itemFiledName]: {
-          Action: `ICollectionAction<${prop}GetRes, ${prop}Action>`,
-          GetRes: `${prop}GetRes[]`,
-          IsDispRes: `${prop}IsDispRes[]`,
-          Visibility: `ICollectionCheck<${prop}GetRes, ${prop}Action, ${prop}IsDispRes> | ${prop}IsDispRes | ${prop}IsDispRes[]`,
-          Content: `ICollectionCheck<${prop}GetRes, ${prop}Action, ${prop}GetRes> | ${prop}GetRes | ${prop}GetRes[]`,
-        },
-      };
+      const collectionsItem = new del[itemFiledName].InstanceType(
+        del[itemFiledName].rootLocator,
+        del[itemFiledName].identifier,
+        del[itemFiledName].rootElements.get(0),
+      );
 
-      if (isSendKeys) {
-        // @ts-ignore
-        types[itemFiledName].SendKeys = `ICollectionAction<${prop}GetRes, ${prop}SendKeys>`;
+      const types = { [itemFiledName]: {} };
+
+      if (collectionWaitingTypes[action]) {
+        const { where, action: proxyAction, compare } = collectionWaitingTypes[action];
+        types[itemFiledName][action] = `ICollectionCheck<
+        ${getElementType(collectionsItem, where, 'resultType')},
+        ${getElementType(collectionsItem, proxyAction, 'entryType')},
+        ${getElementType(collectionsItem, compare, 'resultType')}
+      > | ${getElementType(collectionsItem, where, 'resultType')} | ${getElementType(
+          collectionsItem,
+          where,
+          'resultType',
+        )}[]`;
+      } else {
+        types[itemFiledName][action] = `ICollectionAction<${getElementType(
+          collectionsItem,
+          action,
+          'resultType',
+        )}, ${getElementType(collectionsItem, action, 'entryType')}>`;
       }
 
       return types;
@@ -184,38 +169,24 @@ function createTypeForFragment(del, action = 'Action', actionElements) {
   );
 }
 
-function getElementsTypes(instance, expectedType, actionElements: Set<string>) {
-  if (expectedType === 'void') return expectedType;
+function getElementsTypes(instance, action, actionType) {
+  const { resultActionsMap, baseElementsActionsDescription } = getConfiguration();
+  if (resultActionsMap[action] === 'void' && actionType === 'resultType') return 'void';
 
   const instanceElements = Object.getOwnPropertyNames(instance)
-    .filter(itemFiledName => {
-      const prop = instance[itemFiledName]?.constructor?.name;
+    .filter(itemFiledName => baseElementsActionsDescription[instance[itemFiledName]?.constructor?.name])
+    .map(itemFiledName => ({ [itemFiledName]: getElementType(instance[itemFiledName], action, actionType) }));
 
-      return actionElements.has(prop);
-    })
-    .map(itemFiledName => ({ [itemFiledName]: getElementType(instance[itemFiledName], expectedType, actionElements) }));
-
-  return createType(Array.from(instanceElements), expectedType);
+  return createType(Array.from(instanceElements), action);
 }
 
-function getElementType(instance, expectedType, actionElements: Set<string>) {
+function getElementType(instance, action: string, actionType: string) {
+  const { baseElementsActionsDescription } = getConfiguration();
   const prop = instance.constructor.name;
 
-  const isSendKeys = actionElements.has(prop);
-
-  const types: any = {
-    Action: `${prop}Action`,
-    GetRes: `${prop}GetRes`,
-    IsDispRes: `${prop}IsDispRes`,
-    Visibility: `${prop}IsDispRes`,
-    Content: `${prop}GetRes`,
-  };
-
-  if (isSendKeys) {
-    types.SendKeys = `${prop}SendKeys`;
-  }
-  if (expectedType) {
-    return types[expectedType];
+  const types = {};
+  if (baseElementsActionsDescription[prop][action] && baseElementsActionsDescription[prop][action][actionType]) {
+    types[action] = `${prop}${baseElementsActionsDescription[prop][action][actionType]}`;
   }
 
   return types;

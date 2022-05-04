@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-/* eslint-disable unicorn/no-abusive-eslint-disable */
 /* eslint-disable */
 
 process.title = 'promod-generator';
@@ -12,24 +11,24 @@ const { hideBin } = require('yargs/helpers');
 const argv = yargs(hideBin(process.argv)).argv;
 
 const { createPageStructure } = require('../built/generate');
-const { createPageStructure } = require('../built/config.template');
+const { createTemplateConfig } = require('../built/config.template');
 
 if (argv.clihelp) {
   console.info(`
     Usage:
-      --clihelp - get usage description
-      --generate-config - generate base config
-      --file="/path/to/page.ts" - generate actions for required page
+      --clihelp                     - get usage description
+      --generate-config             - generate base config
+      --file="/path/to/page.ts"     - generate actions for required page
   `);
   process.exit(0);
 }
 
-if (!argv.file) {
+if (argv['generate-config']) {
+  createTemplateConfig();
+} else if (!argv.file) {
   throw new Error('"file" argument should exist');
-}
-
-if (!fs.existsSync(argv.file)) {
+} else if (!fs.existsSync(argv.file)) {
   throw new Error('"file" should exist, please check file path which you use');
+} else {
+  createPageStructure(argv.file);
 }
-
-createPageStructure(argv.file);

@@ -2,55 +2,232 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const template = `
-const actionWithWaitOpts = new Set(['waitForVisibilityState', 'waitForContentState']);
-const baseElementActions = {
-  click: 'Action',
-  get: 'Action',
-  isDisplayed: 'Action',
-  sendKeys: 'SendKeys',
-};
-const actionToTypeMap = {
-  click: 'Action',
-  get: 'Action',
-  isDisplayed: 'Action',
-  sendKeys: 'SendKeys',
-  waitForVisibilityState: 'Visibility',
-  waitForContentState: 'Content',
-};
-const resultActionsMap = {
-  click: 'void',
-  get: 'GetRes',
-  isDisplayed: 'IsDispRes',
-  sendKeys: 'void',
-  waitForVisibilityState: 'void',
-  waitForContentState: 'void',
+const baseElementsActionsDescription = {
+  Checkbox: {
+    get: {
+      entryType: 'Action',
+      resultType: 'GetRes',
+    },
+    isDisplayed: {
+      entryType: 'Action',
+      resultType: 'IsDispRes',
+    },
+    sendKeys: {
+      entryType: 'SendKeys',
+    },
+    waitForVisibilityState: {
+      entryType: 'IsDispRes',
+    },
+    waitForContentState: {
+      entryType: 'GetRes',
+    },
+  },
+  Input: {
+    get: {
+      entryType: 'Action',
+      resultType: 'GetRes',
+    },
+    isDisplayed: {
+      entryType: 'Action',
+      resultType: 'IsDispRes',
+    },
+    sendKeys: {
+      entryType: 'SendKeys',
+    },
+    waitForVisibilityState: {
+      entryType: 'IsDispRes',
+    },
+    waitForContentState: {
+      entryType: 'GetRes',
+    },
+  },
+  Radio: {
+    get: {
+      entryType: 'Action',
+      resultType: 'GetRes',
+    },
+    isDisplayed: {
+      entryType: 'Action',
+      resultType: 'IsDispRes',
+    },
+    sendKeys: {
+      entryType: 'SendKeys',
+    },
+    waitForVisibilityState: {
+      entryType: 'IsDispRes',
+    },
+    waitForContentState: {
+      entryType: 'GetRes',
+    },
+  },
+  Select: {
+    get: {
+      entryType: 'Action',
+      resultType: 'GetRes',
+    },
+    isDisplayed: {
+      entryType: 'Action',
+      resultType: 'IsDispRes',
+    },
+    sendKeys: {
+      entryType: 'SendKeys',
+    },
+    waitForVisibilityState: {
+      entryType: 'IsDispRes',
+    },
+    waitForContentState: {
+      entryType: 'GetRes',
+    },
+  },
+  Toggle: {
+    get: {
+      entryType: 'Action',
+      resultType: 'GetRes',
+    },
+    isDisplayed: {
+      entryType: 'Action',
+      resultType: 'IsDispRes',
+    },
+    sendKeys: {
+      entryType: 'SendKeys',
+    },
+    waitForVisibilityState: {
+      entryType: 'IsDispRes',
+    },
+    waitForContentState: {
+      entryType: 'GetRes',
+    },
+  },
+  Button: {
+    click: {
+      entryType: 'Action',
+    },
+    get: {
+      entryType: 'Action',
+      resultType: 'GetRes',
+    },
+    isDisplayed: {
+      entryType: 'Action',
+      resultType: 'IsDispRes',
+    },
+    waitForVisibilityState: {
+      entryType: 'IsDispRes',
+    },
+    waitForContentState: {
+      entryType: 'GetRes',
+    },
+  },
+  Image: {
+    click: {
+      entryType: 'Action',
+    },
+    get: {
+      entryType: 'Action',
+      resultType: 'GetRes',
+    },
+    isDisplayed: {
+      entryType: 'Action',
+      resultType: 'IsDispRes',
+    },
+    waitForVisibilityState: {
+      entryType: 'IsDispRes',
+    },
+    waitForContentState: {
+      entryType: 'GetRes',
+    },
+  },
+  Link: {
+    click: {
+      entryType: 'Action',
+    },
+    get: {
+      entryType: 'Action',
+      resultType: 'GetRes',
+    },
+    isDisplayed: {
+      entryType: 'Action',
+      resultType: 'IsDispRes',
+    },
+    waitForVisibilityState: {
+      entryType: 'IsDispRes',
+    },
+    waitForContentState: {
+      entryType: 'GetRes',
+    },
+  },
+  Tab: {
+    click: {
+      entryType: 'Action',
+    },
+    get: {
+      entryType: 'Action',
+      resultType: 'GetRes',
+    },
+    isDisplayed: {
+      entryType: 'Action',
+      resultType: 'IsDispRes',
+    },
+    waitForVisibilityState: {
+      entryType: 'IsDispRes',
+    },
+    waitForContentState: {
+      entryType: 'GetRes',
+    },
+  },
+  Text: {
+    click: {
+      entryType: 'Action',
+    },
+    get: {
+      entryType: 'Action',
+      resultType: 'GetRes',
+    },
+    isDisplayed: {
+      entryType: 'Action',
+      resultType: 'IsDispRes',
+    },
+    waitForVisibilityState: {
+      entryType: 'IsDispRes',
+    },
+    waitForContentState: {
+      entryType: 'GetRes',
+    },
+  },
 };
 
-const baseElementsList = new Set([
-  'Checkbox',
-  'Input',
-  'Radio',
-  'Select',
-  'Toggle',
-  'Button',
-  'Image',
-  'Link',
-  'Tab',
-  'Text',
-  'DropSearchMultiSelect',
-  'DatePicker',
-]);
-const baseElementsWithSendKeysAction = new Set([
-  'Input',
-  'Checkbox',
-  'Select',
-  'Toggle',
-  'DropSearchMultiSelect',
-  'DatePicker',
-]);
+const collectionWaitingTypes = {
+  waitForContentState: {
+    where: 'get',
+    action: 'get',
+    compare: 'get',
+  },
+  waitForVisibilityState: {
+    where: 'get',
+    action: 'isDisplayed',
+    compare: 'isDisplayed',
+  },
+};
 
-const clickElements = new Set(['Button', 'Image', 'Link', 'Tab', 'Text']);
-const systemPropsList = new Set([
+const collectionActionTypes = {
+  get: {
+    where: 'get',
+    action: 'get',
+  },
+  isDisplayed: {
+    where: 'get',
+    action: 'isDisplayed',
+  },
+  sendKeys: {
+    where: 'get',
+    action: 'sendKeys',
+  },
+  click: {
+    where: 'get',
+    action: 'click',
+  },
+};
+
+const systemPropsList = [
   'index',
   'rootLocator',
   'rootElements',
@@ -60,25 +237,44 @@ const systemPropsList = new Set([
   'parent',
   'loaderLocator',
   'rootElement',
-]);
+];
+
+const resultActionsMap = {
+  click: 'void',
+  get: 'resultType',
+  isDisplayed: 'resultType',
+  sendKeys: 'void',
+  waitForVisibilityState: 'void',
+  waitForContentState: 'void',
+};
+
+const actionWithWaitOpts = ['waitForVisibilityState', 'waitForContentState'];
+
+const prettyMethodName = {
+  isDisplayed: 'get Visibility of',
+  get: 'get data from',
+  sendKeys: 'set Values to',
+};
+
+const baseLibraryDescription = {
+  entityId: 'identifier',
+  rootLocatorId: 'rootLocator',
+  pageId: 'Page',
+  fragmentId: 'Fragment',
+  collectionId: 'Collection',
+  collectionItemId: 'InstanceType',
+};
 
 module.exports = {
-  baseElementsList,
-
-  clickElements,
-  sendKeysElements: baseElementsWithSendKeysAction,
-  getElements: baseElementsList,
-  isDisplayedElements: baseElementsList,
-  waitForVisibilityStateElements: baseElementsList,
-  waitForContentStateElements: baseElementsList,
-
-  actionWithWaitOpts,
-  systemPropsList,
-  baseElementActions,
-  actionToTypeMap,
-  resultActionsMap,
-
+  baseElementsActionsDescription,
   pathToBase: 'lib',
+  systemPropsList,
+  collectionWaitingTypes,
+  collectionActionTypes,
+  resultActionsMap,
+  actionWithWaitOpts,
+  prettyMethodName,
+  baseLibraryDescription,
 };
 `;
 

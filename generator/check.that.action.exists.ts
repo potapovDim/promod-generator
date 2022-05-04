@@ -1,44 +1,45 @@
 /* eslint-disable complexity, sonarjs/cognitive-complexity*/
 import { getConfiguration } from './config';
 
-function checkThatFragmentHasItemsToAction(instance, actionElements = new Set()) {
-  const { systemPropsList, baseElementsList } = getConfiguration();
-  const fragment = instance;
+function checkThatElementHasAction(baseElementsActionsDescription, element, action) {
+  return baseElementsActionsDescription[element][action];
+}
 
-  if (fragment.constructor.name === 'Collection' && actionElements === baseElementsList) {
-    return true;
-  }
-
-  if (actionElements.size === 0) {
-    return true;
-  }
+function checkThatFragmentHasItemsToAction(fragment, action: string) {
+  const { systemPropsList, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
 
   const pageFragments = Object.getOwnPropertyNames(fragment);
-  const interactionFields = pageFragments.filter(item => !systemPropsList.has(item));
+  const interactionFields = pageFragments.filter(item => !systemPropsList.includes(item));
 
+  let result = false;
   for (const fragmentChildFieldName of interactionFields) {
     const childConstructorName = fragment[fragmentChildFieldName].constructor.name;
 
-    if (childConstructorName.includes('Fragment')) {
-      const result = checkThatFragmentHasItemsToAction(fragment[fragmentChildFieldName], actionElements);
+    if (childConstructorName.includes(baseLibraryDescription.fragmentId)) {
+      result = checkThatFragmentHasItemsToAction(fragment[fragmentChildFieldName], action);
 
       if (result) return result;
-    }
-
-    if (childConstructorName === 'InstanceType') {
+    } else if (childConstructorName.includes(baseLibraryDescription.collectionId)) {
       const collection = fragment[fragmentChildFieldName];
       const CollectionInstanceType = fragment[fragmentChildFieldName].InstanceType;
 
       const result = checkThatFragmentHasItemsToAction(
-        new CollectionInstanceType(collection.rootLocator, collection.identifier, collection.rootElements.get(0)),
-        actionElements,
+        new CollectionInstanceType(
+          collection[baseLibraryDescription.rootLocatorId],
+          collection[baseLibraryDescription.entityId],
+          collection.rootElements.get(0),
+        ),
+        action,
       );
 
       if (result) return result;
+    } else if (baseElementsActionsDescription[childConstructorName]) {
+      result = checkThatElementHasAction(baseElementsActionsDescription, childConstructorName, action);
+      if (result) return result;
     }
-
-    if (actionElements.has(childConstructorName)) return true;
   }
+
+  return result;
 }
 
 export { checkThatFragmentHasItemsToAction };

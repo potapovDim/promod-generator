@@ -1,4 +1,3 @@
-/* eslint-disable max-statements, complexity, max-len, unicorn/prefer-set-has, sonarjs/no-nested-template-literals*/
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -6,11 +5,12 @@ import { getBaseImport } from './get.base.import';
 import { findAllBaseElements } from './get.base.elements';
 import { getConfiguration } from './config';
 import { getActionFlows } from './get.action.flows';
+import { getAllBaseActions } from './utils';
 
 const flowMatcher = /(?<=const ).*(?= = async)/gim;
 
 const createPageStructure = (pagePath: string) => {
-  const { pathToBase } = getConfiguration();
+  const { pathToBase, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
   const frameworkPath = process.cwd();
   const pageRelativePath = path.basename(pagePath);
   const pageRelativeTsPath = pageRelativePath.replace('.ts', '');
@@ -24,10 +24,10 @@ const createPageStructure = (pagePath: string) => {
 
   const pageModule = require(pagePath);
 
-  // @ts-ignore
-  const PageClass = Object.values(pageModule as { [k: string]: any })[0];
+  const PageClass = Object.values(pageModule as { [k: string]: any }).find(exportedItem =>
+    exportedItem.constructor.name.includes(baseLibraryDescription.pageId),
+  );
   const pageInstance = new PageClass();
-  console.log(pageInstance);
 
   const globalImport = `import {
   ${getBaseImport(findAllBaseElements(pageInstance))}
@@ -37,35 +37,10 @@ const createPageStructure = (pagePath: string) => {
 
   const asActorAndPage = `on ${pageName}`;
 
-  const baseActionToTypeMap = {
-    click: 'Action',
-    sendKeys: 'SendKeys',
-    get: 'Action',
-    isDisplayed: 'Action',
-    waitForVisibilityState: 'Visibility',
-    waitForContentState: 'Content',
-  };
+  const actions = getAllBaseActions(baseElementsActionsDescription);
 
-  const baseResultActionTypeMap = {
-    click: 'void',
-    sendKeys: 'void',
-    get: 'GetRes',
-    isDisplayed: 'IsDispRes',
-    waitForContentState: 'void',
-    waitForVisibilityState: 'void',
-  };
-
-  const requiredActionsList = Object.keys(baseActionToTypeMap);
-
-  const interactionInterface = requiredActionsList.map(pageAction =>
-    getActionFlows(
-      asActorAndPage,
-      pageName,
-      pageInstance,
-      pageAction,
-      baseActionToTypeMap[pageAction],
-      baseResultActionTypeMap[pageAction],
-    ),
+  const interactionInterface = actions.map(pageAction =>
+    getActionFlows(asActorAndPage, pageName, pageInstance, pageAction),
   );
 
   const body = `${globalImport}
