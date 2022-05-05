@@ -1,8 +1,10 @@
 /* eslint-disable complexity, sonarjs/cognitive-complexity*/
 import { getConfiguration } from './config';
 
-function checkThatElementHasAction(baseElementsActionsDescription, element, action) {
-  return baseElementsActionsDescription[element][action];
+function checkThatElementHasAction(elementConstructorName, action) {
+  const { baseElementsActionsDescription } = getConfiguration();
+
+  return !!baseElementsActionsDescription[elementConstructorName][action];
 }
 
 function checkThatFragmentHasItemsToAction(fragment, action: string) {
@@ -19,10 +21,14 @@ function checkThatFragmentHasItemsToAction(fragment, action: string) {
       result = checkThatFragmentHasItemsToAction(fragment[fragmentChildFieldName], action);
 
       if (result) return result;
-    } else if (childConstructorName.includes(baseLibraryDescription.collectionId)) {
+    } else if (
+      childConstructorName.includes(baseLibraryDescription.collectionId) &&
+      fragment[fragmentChildFieldName][baseLibraryDescription.collectionItemId].name.includes(
+        baseLibraryDescription.fragmentId,
+      )
+    ) {
       const collection = fragment[fragmentChildFieldName];
       const CollectionInstanceType = fragment[fragmentChildFieldName].InstanceType;
-
       const result = checkThatFragmentHasItemsToAction(
         new CollectionInstanceType(
           collection[baseLibraryDescription.rootLocatorId],
@@ -33,8 +39,17 @@ function checkThatFragmentHasItemsToAction(fragment, action: string) {
       );
 
       if (result) return result;
+    } else if (
+      childConstructorName.includes(baseLibraryDescription.collectionId) &&
+      baseElementsActionsDescription[fragment[fragmentChildFieldName][baseLibraryDescription.collectionItemId]?.name]
+    ) {
+      result = checkThatElementHasAction(
+        fragment[fragmentChildFieldName][baseLibraryDescription.collectionItemId]?.name,
+        action,
+      );
+      if (result) return result;
     } else if (baseElementsActionsDescription[childConstructorName]) {
-      result = checkThatElementHasAction(baseElementsActionsDescription, childConstructorName, action);
+      result = checkThatElementHasAction(childConstructorName, action);
       if (result) return result;
     }
   }
@@ -42,4 +57,4 @@ function checkThatFragmentHasItemsToAction(fragment, action: string) {
   return result;
 }
 
-export { checkThatFragmentHasItemsToAction };
+export { checkThatFragmentHasItemsToAction, checkThatElementHasAction };

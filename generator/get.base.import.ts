@@ -1,6 +1,6 @@
 import { getConfiguration } from './config';
 
-const getElementType = elementName => {
+const getElementImportType = elementName => {
   const { baseElementsActionsDescription } = getConfiguration();
 
   const avaliableAtions = Array.from(
@@ -21,7 +21,7 @@ const getBaseImport = baseElements => {
   return uniqBaseElements
     .filter(item => item !== baseLibraryDescription.collectionId)
     .reduce(
-      (importString, element) => `${importString}\n  ${getElementType(element)}`,
+      (importString, element) => `${importString}\n  ${getElementImportType(element)}`,
       `${
         // TODO Collection flexible types
         uniqBaseElements.includes(baseLibraryDescription.collectionId)
