@@ -79,7 +79,7 @@ function createTypeForFragment(del, action, actionType) {
       const types = {};
 
       if (checkThatFragmentHasItemsToAction(del[itemFiledName], action)) {
-        types[itemFiledName][action] = createTypeForFragment(del[itemFiledName], action, actionType);
+        types[itemFiledName] = { [action]: createTypeForFragment(del[itemFiledName], action, actionType) };
       }
 
       return types;
