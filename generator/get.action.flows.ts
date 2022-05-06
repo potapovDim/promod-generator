@@ -33,7 +33,7 @@ function getActionFlows(asActorAndPage, pageName, pageInstance, action) {
   const interactionFields = pageFields.filter(field => !systemPropsList.includes(field));
 
   const pageElementActions = interactionFields.filter(
-    field => baseElementsActionsDescription[pageFields[field].constructor.name],
+    field => baseElementsActionsDescription[pageInstance[field]?.constructor.name],
   );
 
   const pageFragmentsActions = interactionFields.filter(field =>

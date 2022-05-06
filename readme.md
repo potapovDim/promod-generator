@@ -9,3 +9,13 @@
 <p>
 The purpose of this library is generation of the BDD flows.
 </p>
+
+
+## Improvement/new features plan
+ * [ ] Fix hardcoded values
+ * [ ] Config validation
+ * [ ] Logging
+ * [ ] Error messages
+ * [ ] Generate config `baseElementsActionsDescription` part based on base elements library
+ * [ ] Generate base library
+ * [ ] Generate project example
