@@ -12,6 +12,7 @@ function createFlowTemplates(name, action, field, instance) {
 
   return `type T${camelize(`${field}${action}`)} = ${flowArgumentType}
 const ${name} = async function(data: T${camelize(`${field}${action}`)}${
+    // TODO should be update
     actionWithWaitOpts.includes(action) ? ', opts?: IWaitOpts' : ''
   }): Promise<${flowResultType}> {
   ${flowResultType === 'void' ? 'return' : `const { ${field} } =`} await page.${action}({ ${field}: data }${
@@ -29,21 +30,23 @@ function getActionFlows(asActorAndPage, pageName, pageInstance, action) {
   } = getConfiguration();
 
   const pageFields = Object.getOwnPropertyNames(pageInstance);
-  const interactionFields = pageFields.filter(item => !systemPropsList.includes(item));
+  const interactionFields = pageFields.filter(field => !systemPropsList.includes(field));
 
   const pageElementActions = interactionFields.filter(
-    fragmentFieldName => baseElementsActionsDescription[fragmentFieldName],
+    field => baseElementsActionsDescription[pageFields[field].constructor.name],
   );
 
-  const pageFragmentsActions = interactionFields.filter(fragmentFieldName =>
-    checkThatFragmentHasItemsToAction(pageInstance[fragmentFieldName], action),
+  const pageFragmentsActions = interactionFields.filter(field =>
+    checkThatFragmentHasItemsToAction(pageInstance[field], action),
   );
 
   const flowActionName = camelize(
+    // TODO should be update
     `${asActorAndPage} ${prettyMethodName[action] ? prettyMethodName[action] : action} PageElements`,
   );
 
   const flowTypeName = camelize(`T ${pageName} ${action}`);
+  // TODO should be update
   const optionsSecondArgument = actionWithWaitOpts.includes(action) ? ', opts?: IWaitOpts' : '';
 
   const pageElementAction = pageElementActions.length

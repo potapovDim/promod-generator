@@ -263,6 +263,7 @@ const baseLibraryDescription = {
   fragmentId: 'Fragment',
   collectionId: 'Collection',
   collectionItemId: 'InstanceType',
+  getDataMethod: 'get'
 };
 
 module.exports = {

@@ -194,8 +194,14 @@ function getElementActionType(instance, action: string, actionType: string) {
 function getElementType(instance, action: string, actionType: string) {
   const { baseElementsActionsDescription } = getConfiguration();
   const prop = instance.constructor.name;
-
+  // console.log(
+  //   prop,
+  //   action,
+  //   actionType,
+  //   baseElementsActionsDescription[prop][action] && baseElementsActionsDescription[prop][action][actionType],
+  // );
   if (baseElementsActionsDescription[prop][action] && baseElementsActionsDescription[prop][action][actionType]) {
+    // console.log('XXXXXX');
     return `${prop}${baseElementsActionsDescription[prop][action][actionType]}`;
   }
 

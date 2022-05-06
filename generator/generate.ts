@@ -6,6 +6,7 @@ import { findAllBaseElements } from './get.base.elements';
 import { getConfiguration } from './config';
 import { getActionFlows } from './get.action.flows';
 import { getAllBaseActions } from './utils';
+import { getRandomResultsFlows } from './get.random.results.flows';
 
 const flowMatcher = /(?<=const ).*(?= = async)/gim;
 
@@ -34,9 +35,10 @@ const createPageStructure = (pagePath: string) => {
 
   const pageInstance = new PageClass();
 
-  const globalImport = `import {
-  ${getBaseImport(findAllBaseElements(pageInstance))}
-} from '${pathToLibFolder}${pathToBase}';`;
+  const globalImport = `import { toArray, getRandomArrayItem } from 'sat-utils';
+import {
+    ${getBaseImport(findAllBaseElements(pageInstance))}
+  } from '${pathToLibFolder}${pathToBase}';`;
 
   const pageName = pageInstance.identifier;
 
@@ -44,7 +46,9 @@ const createPageStructure = (pagePath: string) => {
 
   const actions = getAllBaseActions(baseElementsActionsDescription);
 
-  const interactionInterface = actions.map(pageAction =>
+  const randomResultsFlowsTemplate = getRandomResultsFlows(asActorAndPage, pageName, pageInstance);
+
+  const interactionFlowsTemplate = actions.map(pageAction =>
     getActionFlows(asActorAndPage, pageName, pageInstance, pageAction),
   );
 
@@ -53,7 +57,8 @@ const createPageStructure = (pagePath: string) => {
 import { ${PageClass.prototype.constructor.name} } from './${pageRelativeTsPath}';
 
 const page = new ${PageClass.prototype.constructor.name}();
-${interactionInterface.join('\n')}`;
+${interactionFlowsTemplate.join('\n')}
+${randomResultsFlowsTemplate}`;
 
   const flows = body.match(flowMatcher) || [];
 

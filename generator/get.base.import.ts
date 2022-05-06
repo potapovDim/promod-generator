@@ -23,7 +23,7 @@ const getBaseImport = baseElements => {
     .reduce(
       (importString, element) => `${importString}\n  ${getElementImportType(element)}`,
       `${
-        // TODO Collection flexible types
+        // TODO should be update
         uniqBaseElements.includes(baseLibraryDescription.collectionId)
           ? 'IWaitOpts, ICollectionAction, ICollectionCheck,'
           : 'IWaitOpts,'

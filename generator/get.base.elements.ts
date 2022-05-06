@@ -11,9 +11,9 @@ function findAllBaseElements(instance, baseElements = []) {
     if (baseElementsActionsDescription[fragment[baseLibraryDescription.collectionItemId].constructor.name]) {
       baseElements.push(fragment.InstanceType.constructor.name);
     } else {
-      const collectionInstance = new fragment.InstanceType(
-        fragment.rootLocator,
-        fragment.identifier,
+      const collectionInstance = new fragment[baseLibraryDescription.collectionItemId](
+        fragment[baseLibraryDescription.rootLocatorId],
+        fragment[baseLibraryDescription.entityId],
         fragment.rootElements.get(0),
       );
 
