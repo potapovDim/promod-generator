@@ -263,6 +263,9 @@ const baseLibraryDescription = {
   fragmentId: 'Fragment',
   collectionId: 'Collection',
   collectionItemId: 'InstanceType',
+  waitOptionsId: 'IWaitOpts',
+  collectionActionId: 'ICollectionAction'
+  collectionCheckId: 'ICollectionCheck',
   getDataMethod: 'get'
 };
 

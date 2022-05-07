@@ -19,3 +19,4 @@ The purpose of this library is generation of the BDD flows.
  * [ ] Generate config `baseElementsActionsDescription` part based on base elements library
  * [ ] Generate base library
  * [ ] Generate project example
+ * [ ] Вepth level flow generation

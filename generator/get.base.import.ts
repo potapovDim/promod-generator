@@ -18,16 +18,15 @@ const getBaseImport = baseElements => {
   const { baseLibraryDescription } = getConfiguration();
   const uniqBaseElements = Array.from(new Set(baseElements));
 
+  const collectionActionsImportPart = uniqBaseElements.includes(baseLibraryDescription.collectionId)
+    ? `${baseLibraryDescription.collectionActionId}, ${baseLibraryDescription.collectionCheckId},`
+    : '';
+
   return uniqBaseElements
     .filter(item => item !== baseLibraryDescription.collectionId)
     .reduce(
       (importString, element) => `${importString}\n  ${getElementImportType(element)}`,
-      `${
-        // TODO should be update
-        uniqBaseElements.includes(baseLibraryDescription.collectionId)
-          ? 'IWaitOpts, ICollectionAction, ICollectionCheck,'
-          : 'IWaitOpts,'
-      }`,
+      `${baseLibraryDescription.waitOptionsId}, ${collectionActionsImportPart}`,
     );
 };
 
