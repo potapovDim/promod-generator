@@ -76,14 +76,14 @@ function getReturnTemplateAndLastKey(dataObj) {
   };
 }
 
-function createFlowTemplates(asActorAndPage, pageName, dataObj) {
+function createFlowTemplates(asActorAndPage, dataObj) {
   const { baseLibraryDescription } = getConfiguration();
 
   const { type, typeName } = getFlowEntryType(dataObj);
   const { lastKey, returnTemplate } = getReturnTemplateAndLastKey(dataObj);
   const argumentTemplate = getReturnArgumentTemplate(dataObj);
 
-  const name = camelize(`${asActorAndPage} ${pageName} get random data from ${getPropPath(dataObj)}`);
+  const name = camelize(`${asActorAndPage} get random data from ${getPropPath(dataObj)}`);
 
   return `\n
 ${type}
@@ -102,7 +102,7 @@ const ${name} = async function(data: ${typeName}): Promise<string> {
 };\n`;
 }
 
-function getRandomResultsFlows(asActorAndPage, pageName, pageInstance) {
+function getRandomResultsFlows(asActorAndPage, pageInstance) {
   const { systemPropsList } = getConfiguration();
 
   const pageFields = Object.getOwnPropertyNames(pageInstance);
@@ -114,7 +114,7 @@ function getRandomResultsFlows(asActorAndPage, pageName, pageInstance) {
     .map(field => getPathesToCollections(pageInstance[field], field));
 
   return randomResultData.reduce((flows, dataObject) => {
-    return `${flows}${createFlowTemplates(asActorAndPage, pageName, dataObject)}`;
+    return `${flows}${createFlowTemplates(asActorAndPage, dataObject)}`;
   }, '');
 }
 

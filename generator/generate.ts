@@ -46,7 +46,7 @@ import {
 
   const actions = getAllBaseActions(baseElementsActionsDescription);
 
-  const randomResultsFlowsTemplate = getRandomResultsFlows(asActorAndPage, pageName, pageInstance);
+  const randomResultsFlowsTemplate = getRandomResultsFlows(asActorAndPage, pageInstance);
 
   const interactionFlowsTemplate = actions.map(pageAction =>
     getActionFlows(asActorAndPage, pageName, pageInstance, pageAction),
