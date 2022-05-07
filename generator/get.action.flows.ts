@@ -18,7 +18,7 @@ function createFlowTemplates(name, action, field, instance) {
 
   const flowArgumentType = createTypeForFragment(instance, action, 'entryType');
   const flowResultType = createTypeForFragment(instance, action, 'resultType');
-  const typeName = camelize(`T${field}${action}`);
+  const typeName = `T${camelize(`${field} ${action}`)}`;
 
   const optionsSecondArgument = actionWithWaitOpts.includes(action)
     ? `, opts?: ${baseLibraryDescription.waitOptionsId}`
@@ -28,14 +28,14 @@ function createFlowTemplates(name, action, field, instance) {
 }
 
 // TODO try to build generic method for page elements and page fragments
-function createFlowTemplateForPageElements(name, action, field, instance) {
+function createFlowTemplateForPageElements(name, action, instance) {
   const { actionWithWaitOpts, baseLibraryDescription, prettyMethodName = {} } = getConfiguration();
 
   const prettyFlowActionNamePart = prettyMethodName[action] || action;
 
   const flowArgumentType = getElementsTypes(instance, action, 'entryType');
   const flowResultType = getElementsTypes(instance, action, 'resultType');
-  const typeName = camelize(`T ${name} ${action}`);
+  const typeName = `T${camelize(`${name} ${action}`)}`;
 
   const flowActionName = camelize(`${name} ${prettyFlowActionNamePart} PageElements`);
 
@@ -50,13 +50,8 @@ const ${flowActionName} = async function(data: ${typeName}${optionsSecondArgumen
 };\n`;
 }
 
-function getActionFlows(asActorAndPage, pageName, pageInstance, action) {
-  const {
-    baseElementsActionsDescription,
-    actionWithWaitOpts,
-    systemPropsList,
-    prettyMethodName = {},
-  } = getConfiguration();
+function getActionFlows(asActorAndPage: string, pageInstance: object, action: string) {
+  const { baseElementsActionsDescription, systemPropsList, prettyMethodName = {} } = getConfiguration();
 
   const pageFields = Object.getOwnPropertyNames(pageInstance);
   const interactionFields = pageFields.filter(field => !systemPropsList.includes(field));
@@ -69,23 +64,22 @@ function getActionFlows(asActorAndPage, pageName, pageInstance, action) {
     checkThatFragmentHasItemsToAction(pageInstance[field], action),
   );
 
-  const flowActionName = camelize(
-    // TODO should be update
-    `${asActorAndPage} ${prettyMethodName[action] ? prettyMethodName[action] : action} PageElements`,
-  );
-
   const pageElementAction = pageElementActions.length
-    ? createFlowTemplateForPageElements(flowActionName, action, null, pageInstance)
+    ? createFlowTemplateForPageElements(
+        camelize(`${asActorAndPage} ${prettyMethodName[action] ? prettyMethodName[action] : action} PageElements`),
+        action,
+        pageInstance,
+      )
     : '';
 
   return `
 /** ====================== ${action} ================== */
 ${pageFragmentsActions.reduce(
   (template, fragmentFieldName) => {
+    const prettyFlowActionNamePart = prettyMethodName[action] || action;
+
     const name = camelize(
-      `${asActorAndPage} ${prettyMethodName[action] ? prettyMethodName[action] : action} ${
-        pageInstance[fragmentFieldName].identifier
-      }`,
+      `${asActorAndPage} ${prettyFlowActionNamePart} ${pageInstance[fragmentFieldName].identifier}`,
     );
 
     return `${template}\n${createFlowTemplates(name, action, fragmentFieldName, pageInstance[fragmentFieldName])}\n`;
