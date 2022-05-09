@@ -1,11 +1,6 @@
-/* eslint-disable sonarjs/cognitive-complexity */
+/* eslint-disable sonarjs/cognitive-complexity, no-console*/
 import { getConfiguration } from './config';
-
-function checkThatElementHasAction(elementConstructorName, action) {
-  const { baseElementsActionsDescription } = getConfiguration();
-
-  return !!baseElementsActionsDescription[elementConstructorName][action];
-}
+import { checkThatElementHasAction } from './get.base.elements';
 
 function getFragmentInteractionFields(fragment) {
   const { systemPropsList } = getConfiguration();
@@ -102,4 +97,4 @@ function getPathesToCollections(fragmentInstance, name) {
   if (result) return { [name]: result };
 }
 
-export { checkThatElementHasAction, getPathesToCollections };
+export { getPathesToCollections };

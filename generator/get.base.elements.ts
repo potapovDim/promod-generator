@@ -1,4 +1,17 @@
+/* eslint-disable sonarjs/cognitive-complexity, no-console*/
 import { getConfiguration } from './config';
+
+function checkThatElementHasAction(elementConstructorName, action) {
+  const { baseElementsActionsDescription } = getConfiguration();
+
+  if (baseElementsActionsDescription[elementConstructorName]) {
+    return Boolean(baseElementsActionsDescription[elementConstructorName][action]);
+  } else {
+    console.error(`${elementConstructorName} does not exist in 'baseElementsActionsDescription'`);
+
+    return false;
+  }
+}
 
 function findAllBaseElements(instance, baseElements = []) {
   const { systemPropsList, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
@@ -45,4 +58,4 @@ function findAllBaseElements(instance, baseElements = []) {
   return baseElements;
 }
 
-export { findAllBaseElements };
+export { findAllBaseElements, checkThatElementHasAction };

@@ -1,11 +1,6 @@
-/* eslint-disable complexity, sonarjs/cognitive-complexity*/
+/* eslint-disable complexity, sonarjs/cognitive-complexity, no-console*/
 import { getConfiguration } from './config';
-
-function checkThatElementHasAction(elementConstructorName, action) {
-  const { baseElementsActionsDescription } = getConfiguration();
-
-  return !!baseElementsActionsDescription[elementConstructorName][action];
-}
+import { checkThatElementHasAction } from './get.base.elements';
 
 function checkThatFragmentHasItemsToAction(fragment, action: string) {
   const { systemPropsList, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
