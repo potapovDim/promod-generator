@@ -1,7 +1,7 @@
 /* eslint-disable sonarjs/no-nested-template-literals */
 import { camelize } from './utils';
 import { getConfiguration } from './config';
-import { getElementsTypes, createTypeForFragment } from './get.instance.elements.type';
+import { getElementsTypes, getFragmentTypes } from './get.instance.elements.type';
 import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
 
 function getTemplatedCode({ name, typeName, flowArgumentType, flowResultType, optionsSecondArgument, action, field }) {
@@ -16,8 +16,8 @@ function getTemplatedCode({ name, typeName, flowArgumentType, flowResultType, op
 function createFlowTemplates(name, action, field, instance) {
   const { actionWithWaitOpts, baseLibraryDescription } = getConfiguration();
 
-  const flowArgumentType = createTypeForFragment(instance, action, 'entryType');
-  const flowResultType = createTypeForFragment(instance, action, 'resultType');
+  const flowArgumentType = getFragmentTypes(instance, action, 'entryType');
+  const flowResultType = getFragmentTypes(instance, action, 'resultType');
   const typeName = `T${camelize(`${field} ${action}`)}`;
 
   const optionsSecondArgument = actionWithWaitOpts.includes(action)

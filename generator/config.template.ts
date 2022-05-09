@@ -198,11 +198,13 @@ const baseElementsActionsDescription = {
 const collectionWaitingTypes = {
   waitForContentState: {
     where: 'get',
+    visible: 'isDisplayed'
     action: 'get',
     compare: 'get',
   },
   waitForVisibilityState: {
     where: 'get',
+    visible: 'isDisplayed'
     action: 'isDisplayed',
     compare: 'isDisplayed',
   },
@@ -267,6 +269,7 @@ const baseLibraryDescription = {
   collectionActionId: 'ICollectionAction'
   collectionCheckId: 'ICollectionCheck',
   getDataMethod: 'get'
+  getVisibilityMethod: 'isDisplayed'
 };
 
 module.exports = {
