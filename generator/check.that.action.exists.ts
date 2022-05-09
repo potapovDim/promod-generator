@@ -52,4 +52,4 @@ function checkThatFragmentHasItemsToAction(fragment, action: string) {
   return result;
 }
 
-export { checkThatFragmentHasItemsToAction, checkThatElementHasAction };
+export { checkThatFragmentHasItemsToAction };
