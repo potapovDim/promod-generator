@@ -213,18 +213,22 @@ const collectionWaitingTypes = {
 const collectionActionTypes = {
   get: {
     where: 'get',
+    visible: 'isDisplayed',
     action: 'get',
   },
   isDisplayed: {
     where: 'get',
+    visible: 'isDisplayed',
     action: 'isDisplayed',
   },
   sendKeys: {
     where: 'get',
+    visible: 'isDisplayed',
     action: 'sendKeys',
   },
   click: {
     where: 'get',
+    visible: 'isDisplayed',
     action: 'click',
   },
 };

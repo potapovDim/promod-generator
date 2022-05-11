@@ -124,12 +124,11 @@ function getFragmentTypes(instance, action, actionType) {
           'resultType',
         )}[]`;
       } else if (actionType === 'entryType' && collectionActionTypes[action]) {
-        const { where, action: proxyAction } = collectionActionTypes[action];
-        types[itemFiledName][action] = `ICollectionAction<${getFragmentTypes(
-          collectionsItem,
-          where,
-          'resultType',
-        )}, ${getFragmentTypes(collectionsItem, proxyAction, 'entryType')}>`;
+        const { visible, where, action: proxyAction } = collectionActionTypes[action];
+        types[itemFiledName][action] = `ICollectionAction<
+        ${getFragmentTypes(collectionsItem, where, 'resultType')},
+        ${getFragmentTypes(collectionsItem, visible, 'resultType')},
+        ${getFragmentTypes(collectionsItem, proxyAction, 'entryType')}>`;
       } else {
         types[itemFiledName][action] = `${getFragmentTypes(collectionsItem, action, 'resultType')}[]`;
       }
