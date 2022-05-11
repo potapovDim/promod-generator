@@ -59,9 +59,9 @@ function getReturnArgumentTemplate(dataObj) {
     if (isObject(dataObj[key]) && !('_where' in dataObj[key])) {
       return `${template} ${key}: ${getReturnArgumentTemplate(dataObj[key])} }`;
     } else if (isArray(dataObj[key])) {
-      return `${template} ${key}: { action: { [data.field]: null, _where: data._where, _visible: data._visible } } }`;
+      return `${template} ${key}: { _action: { [data.field]: null, _where: data._where, _visible: data._visible } } }`;
     } else {
-      return `${template} ${key}: { action: null, _where: data._where, _visible: data._visible } }`;
+      return `${template} ${key}: { _action: null, _where: data._where, _visible: data._visible } }`;
     }
   }, '{');
 }
