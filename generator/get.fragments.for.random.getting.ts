@@ -95,8 +95,24 @@ function getPathesToCollections(fragmentInstance, name) {
 
         if (result) {
           const _action = null;
-          const _where = getElementType(fragment[field], baseLibraryDescription.getDataMethod, 'resultType');
-          const _visible = getElementType(fragment[field], baseLibraryDescription.getVisibilityMethod, 'resultType');
+          const _where = getElementType(
+            new fragment[field][baseLibraryDescription.collectionItemId](
+              fragment[field][baseLibraryDescription.rootLocatorId],
+              fragment[field][baseLibraryDescription.entityId],
+              fragment[field].rootElements.get(0),
+            ),
+            baseLibraryDescription.getDataMethod,
+            'resultType',
+          );
+          const _visible = getElementType(
+            new fragment[field][baseLibraryDescription.collectionItemId](
+              fragment[field][baseLibraryDescription.rootLocatorId],
+              fragment[field][baseLibraryDescription.entityId],
+              fragment[field].rootElements.get(0),
+            ),
+            baseLibraryDescription.getVisibilityMethod,
+            'resultType',
+          );
 
           pathes[field] = {
             _action,
