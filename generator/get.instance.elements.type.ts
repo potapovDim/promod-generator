@@ -38,9 +38,9 @@ function getCollectionTypes(instance, action, actionType) {
     ${getTypeHandler(collectionsItem, visible, 'resultType')},
     ${getTypeHandler(collectionsItem, proxyAction, 'entryType')},
     ${getTypeHandler(collectionsItem, compare, 'resultType')}
-  > | ${getTypeHandler(collectionsItem, where, 'resultType')} | ${getTypeHandler(
+  > | ${getTypeHandler(collectionsItem, compare, 'resultType')} | ${getTypeHandler(
       collectionsItem,
-      where,
+      compare,
       'resultType',
     )}[]`;
   } else if (actionType === 'entryType' && collectionActionTypes[action]) {
@@ -113,14 +113,15 @@ function getFragmentTypes(instance, action, actionType) {
       }
 
       if (collectionWaitingTypes[action]) {
-        const { where, action: proxyAction, compare } = collectionWaitingTypes[action];
+        const { visible, where, action: proxyAction, compare } = collectionWaitingTypes[action];
         types[itemFiledName][action] = `ICollectionCheck<
         ${getFragmentTypes(collectionsItem, where, 'resultType')},
-        ${getFragmentTypes(collectionsItem, proxyAction, 'entryType')},
-        ${getFragmentTypes(collectionsItem, compare, 'resultType')}
-      > | ${getFragmentTypes(collectionsItem, where, 'resultType')} | ${getFragmentTypes(
+        ${getFragmentTypes(collectionsItem, visible, 'entryType')},
+        ${getFragmentTypes(collectionsItem, proxyAction, 'resultType')},
+        ${getFragmentTypes(collectionsItem, compare, 'resultType')},
+      > | ${getFragmentTypes(collectionsItem, compare, 'resultType')} | ${getFragmentTypes(
           collectionsItem,
-          where,
+          compare,
           'resultType',
         )}[]`;
       } else if (actionType === 'entryType' && collectionActionTypes[action]) {
@@ -155,9 +156,9 @@ function getFragmentTypes(instance, action, actionType) {
         ${getElementType(collectionsItem, visible, 'resultType')},
         ${getElementType(collectionsItem, proxyAction, 'entryType')},
         ${getElementType(collectionsItem, compare, 'resultType')}
-      > | ${getElementType(collectionsItem, where, 'resultType')} | ${getElementType(
+      > | ${getElementType(collectionsItem, compare, 'resultType')} | ${getElementType(
           collectionsItem,
-          where,
+          compare,
           'resultType',
         )}[]`;
       } else if (actionType === 'entryType' && collectionActionTypes[action]) {
