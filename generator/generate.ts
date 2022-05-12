@@ -48,9 +48,7 @@ import {
 
   const randomResultsFlowsTemplate = getRandomResultsFlows(asActorAndPage, pageInstance);
 
-  const interactionFlowsTemplate = actions.map(pageAction =>
-    getActionFlows(asActorAndPage, pageName, pageInstance, pageAction),
-  );
+  const interactionFlowsTemplate = actions.map(pageAction => getActionFlows(asActorAndPage, pageInstance, pageAction));
 
   const body = `${globalImport}
 

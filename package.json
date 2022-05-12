@@ -1,6 +1,6 @@
 {
   "name": "promod-generator",
-  "version": "0.0.1-alpha-6",
+  "version": "0.0.1-alpha-15",
   "description": "promod generator",
   "bin": {
     "promod-generator": "./bin/cli.js"
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/potapovDim/promod-generator#readme",
   "dependencies": {
-    "sat-utils": "^0.0.42",
+    "sat-utils": "^0.0.43",
     "yargs": "^17.4.1"
   },
   "devDependencies": {

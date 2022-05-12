@@ -1,11 +1,7 @@
-/* eslint-disable sonarjs/cognitive-complexity */
+/* eslint-disable sonarjs/cognitive-complexity, no-console*/
 import { getConfiguration } from './config';
-
-function checkThatElementHasAction(elementConstructorName, action) {
-  const { baseElementsActionsDescription } = getConfiguration();
-
-  return !!baseElementsActionsDescription[elementConstructorName][action];
-}
+import { checkThatElementHasAction } from './get.base.elements';
+import { getFragmentTypes, getElementType } from './get.instance.elements.type';
 
 function getFragmentInteractionFields(fragment) {
   const { systemPropsList } = getConfiguration();
@@ -23,8 +19,9 @@ function checThatAllFragmentFieldsAreBaseElements(fragment) {
 }
 
 function getPathesToCollections(fragmentInstance, name) {
+  const { systemPropsList, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
+
   function getPathToListIfExists(fragment) {
-    const { systemPropsList, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
     const pathes = {};
 
     const fields = Object.getOwnPropertyNames(fragment);
@@ -63,13 +60,20 @@ function getPathesToCollections(fragmentInstance, name) {
           return pathes;
         }
       } else if (isFieldCollection && isCollectionItemFragment && doesCollectionItemHaveAllBaseElements) {
-        pathes[field] = getFragmentInteractionFields(
-          new fragment[field][baseLibraryDescription.collectionItemId](
-            fragment[field][baseLibraryDescription.rootLocatorId],
-            fragment[field][baseLibraryDescription.entityId],
-            fragment[field].rootElements.get(0),
-          ),
+        const entity = new fragment[field][baseLibraryDescription.collectionItemId](
+          fragment[field][baseLibraryDescription.rootLocatorId],
+          fragment[field][baseLibraryDescription.entityId],
+          fragment[field].rootElements.get(0),
         );
+        const _action = getFragmentInteractionFields(entity);
+        const _where = getFragmentTypes(entity, baseLibraryDescription.getDataMethod, 'resultType');
+        const _visible = getFragmentTypes(entity, baseLibraryDescription.getVisibilityMethod, 'resultType');
+
+        pathes[field] = {
+          _visible,
+          _where,
+          _action,
+        };
 
         return pathes;
       } else if (isFieldCollection && isCollectionItemFragment) {
@@ -90,7 +94,31 @@ function getPathesToCollections(fragmentInstance, name) {
         }
 
         if (result) {
-          pathes[field] = null;
+          const _action = null;
+          const _where = getElementType(
+            new fragment[field][baseLibraryDescription.collectionItemId](
+              fragment[field][baseLibraryDescription.rootLocatorId],
+              fragment[field][baseLibraryDescription.entityId],
+              fragment[field].rootElements.get(0),
+            ),
+            baseLibraryDescription.getDataMethod,
+            'resultType',
+          );
+          const _visible = getElementType(
+            new fragment[field][baseLibraryDescription.collectionItemId](
+              fragment[field][baseLibraryDescription.rootLocatorId],
+              fragment[field][baseLibraryDescription.entityId],
+              fragment[field].rootElements.get(0),
+            ),
+            baseLibraryDescription.getVisibilityMethod,
+            'resultType',
+          );
+
+          pathes[field] = {
+            _action,
+            _visible,
+            _where,
+          };
           return pathes;
         }
       }
@@ -102,4 +130,4 @@ function getPathesToCollections(fragmentInstance, name) {
   if (result) return { [name]: result };
 }
 
-export { checkThatElementHasAction, getPathesToCollections };
+export { getPathesToCollections };

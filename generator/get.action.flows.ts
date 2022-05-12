@@ -1,33 +1,57 @@
 /* eslint-disable sonarjs/no-nested-template-literals */
-import { camelize } from './utils';
+import { camelize } from 'sat-utils';
 import { getConfiguration } from './config';
-import { getElementsTypes, createTypeForFragment } from './get.instance.elements.type';
+import { getElementsTypes, getFragmentTypes } from './get.instance.elements.type';
 import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
 
-function createFlowTemplates(name, action, field, instance) {
-  const { actionWithWaitOpts } = getConfiguration();
-
-  const flowArgumentType = createTypeForFragment(instance, action, 'entryType');
-  const flowResultType = createTypeForFragment(instance, action, 'resultType');
-
-  return `type T${camelize(`${field}${action}`)} = ${flowArgumentType}
-const ${name} = async function(data: T${camelize(`${field}${action}`)}${
-    // TODO should be update
-    actionWithWaitOpts.includes(action) ? ', opts?: IWaitOpts' : ''
-  }): Promise<${flowResultType}> {
-  ${flowResultType === 'void' ? 'return' : `const { ${field} } =`} await page.${action}({ ${field}: data }${
-    actionWithWaitOpts.includes(action) ? ', opts' : ''
-  });${flowResultType === 'void' ? '' : `\n\n\treturn ${field};`}
-};`;
+function getTemplatedCode({ name, typeName, flowArgumentType, flowResultType, optionsSecondArgument, action, field }) {
+  return `type ${typeName} = ${flowArgumentType}
+  const ${name} = async function(data: ${typeName}${optionsSecondArgument}): Promise<${flowResultType}> {
+    ${flowResultType === 'void' ? 'return' : `const { ${field} } =`} await page.${action}({ ${field}: data }${
+    optionsSecondArgument ? ', opts' : ''
+  });${flowResultType === 'void' ? '' : `\n\treturn ${field};`}
+  };`;
 }
 
-function getActionFlows(asActorAndPage, pageName, pageInstance, action) {
-  const {
-    baseElementsActionsDescription,
-    actionWithWaitOpts,
-    systemPropsList,
-    prettyMethodName = {},
-  } = getConfiguration();
+function createFlowTemplates(name, action, field, instance) {
+  const { actionWithWaitOpts, baseLibraryDescription } = getConfiguration();
+
+  const flowArgumentType = getFragmentTypes(instance, action, 'entryType');
+  const flowResultType = getFragmentTypes(instance, action, 'resultType');
+  const typeName = `T${camelize(`${field} ${action}`)}`;
+
+  const optionsSecondArgument = actionWithWaitOpts.includes(action)
+    ? `, opts?: ${baseLibraryDescription.waitOptionsId}`
+    : '';
+
+  return getTemplatedCode({ name, typeName, flowArgumentType, flowResultType, optionsSecondArgument, action, field });
+}
+
+// TODO try to build generic method for page elements and page fragments
+function createFlowTemplateForPageElements(name, action, instance) {
+  const { actionWithWaitOpts, baseLibraryDescription, prettyMethodName = {} } = getConfiguration();
+
+  const prettyFlowActionNamePart = prettyMethodName[action] || action;
+
+  const flowArgumentType = getElementsTypes(instance, action, 'entryType');
+  const flowResultType = getElementsTypes(instance, action, 'resultType');
+  const typeName = `T${camelize(`${name} ${action}`)}`;
+
+  const flowActionName = camelize(`${name} ${prettyFlowActionNamePart} PageElements`);
+
+  const optionsSecondArgument = actionWithWaitOpts.includes(action)
+    ? `, opts?: ${baseLibraryDescription.waitOptionsId}`
+    : '';
+
+  return `
+type ${typeName} = ${flowArgumentType}
+const ${flowActionName} = async function(data: ${typeName}${optionsSecondArgument}): Promise<${flowResultType}> {
+  return await page.${action}(data${optionsSecondArgument ? ', opts' : ''});
+};\n`;
+}
+
+function getActionFlows(asActorAndPage: string, pageInstance: object, action: string) {
+  const { baseElementsActionsDescription, systemPropsList, prettyMethodName = {} } = getConfiguration();
 
   const pageFields = Object.getOwnPropertyNames(pageInstance);
   const interactionFields = pageFields.filter(field => !systemPropsList.includes(field));
@@ -40,41 +64,26 @@ function getActionFlows(asActorAndPage, pageName, pageInstance, action) {
     checkThatFragmentHasItemsToAction(pageInstance[field], action),
   );
 
-  const flowActionName = camelize(
-    // TODO should be update
-    `${asActorAndPage} ${prettyMethodName[action] ? prettyMethodName[action] : action} PageElements`,
-  );
-
-  const flowTypeName = camelize(`T ${pageName} ${action}`);
-  // TODO should be update
-  const optionsSecondArgument = actionWithWaitOpts.includes(action) ? ', opts?: IWaitOpts' : '';
-
   const pageElementAction = pageElementActions.length
-    ? `
-type ${flowTypeName} = ${getElementsTypes(pageInstance, action, 'entryType')}
-const ${flowActionName} = async function(data: ${flowTypeName}${optionsSecondArgument}): Promise<${getElementsTypes(
-        pageInstance,
+    ? createFlowTemplateForPageElements(
+        camelize(`${asActorAndPage} ${prettyMethodName[action] ? prettyMethodName[action] : action} PageElements`),
         action,
-        'resultType',
-      )}> {
-	return await page.${action}(data, opts);
-};\n`
+        pageInstance,
+      )
     : '';
 
   return `
 /** ====================== ${action} ================== */
 ${pageFragmentsActions.reduce(
-  (template, fragmentFieldName) =>
-    `${template}\n${createFlowTemplates(
-      camelize(
-        `${asActorAndPage} ${prettyMethodName[action] ? prettyMethodName[action] : action} ${
-          pageInstance[fragmentFieldName].identifier
-        }`,
-      ),
-      action,
-      fragmentFieldName,
-      pageInstance[fragmentFieldName],
-    )}\n`,
+  (template, fragmentFieldName) => {
+    const prettyFlowActionNamePart = prettyMethodName[action] || action;
+
+    const name = camelize(
+      `${asActorAndPage} ${prettyFlowActionNamePart} ${pageInstance[fragmentFieldName].identifier}`,
+    );
+
+    return `${template}\n${createFlowTemplates(name, action, fragmentFieldName, pageInstance[fragmentFieldName])}\n`;
+  },
   `\n
 `,
 )}

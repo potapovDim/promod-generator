@@ -1,11 +1,17 @@
 /* eslint-disable unicorn/prefer-switch, no-use-before-define, sonarjs/cognitive-complexity */
 import { createType } from './create.type';
 import { getConfiguration } from './config';
-import { checkThatFragmentHasItemsToAction, checkThatElementHasAction } from './check.that.action.exists';
+import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
+import { checkThatElementHasAction } from './get.base.elements';
 
 function getCollectionTypes(instance, action, actionType) {
-  const { resultActionsMap, baseElementsActionsDescription, collectionWaitingTypes, baseLibraryDescription } =
-    getConfiguration();
+  const {
+    resultActionsMap,
+    baseElementsActionsDescription,
+    collectionWaitingTypes,
+    baseLibraryDescription,
+    collectionActionTypes,
+  } = getConfiguration();
 
   if (resultActionsMap[action] === 'void' && actionType === 'resultType') return 'void';
 
@@ -21,33 +27,36 @@ function getCollectionTypes(instance, action, actionType) {
 
   const getTypeHandler = baseElementsActionsDescription[collectionsItem.constructor.name]
     ? getElementType
-    : createTypeForFragment;
+    : getFragmentTypes;
 
   const types = {};
 
   if (collectionWaitingTypes[action]) {
-    const { where, action: proxyAction, compare } = collectionWaitingTypes[action];
+    const { visible, where, action: proxyAction, compare } = collectionWaitingTypes[action];
     types[action] = `ICollectionCheck<
     ${getTypeHandler(collectionsItem, where, 'resultType')},
+    ${getTypeHandler(collectionsItem, visible, 'resultType')},
     ${getTypeHandler(collectionsItem, proxyAction, 'entryType')},
     ${getTypeHandler(collectionsItem, compare, 'resultType')}
-  > | ${getTypeHandler(collectionsItem, where, 'resultType')} | ${getTypeHandler(
+  > | ${getTypeHandler(collectionsItem, compare, 'resultType')} | ${getTypeHandler(
       collectionsItem,
-      where,
+      compare,
       'resultType',
     )}[]`;
+  } else if (actionType === 'entryType' && collectionActionTypes[action]) {
+    const { where, visible, action: proxyAction } = collectionActionTypes[action];
+    types[action] = `ICollectionAction<
+    ${getTypeHandler(collectionsItem, where, 'resultType')},
+    ${getTypeHandler(collectionsItem, visible, 'resultType')},
+     ${getTypeHandler(collectionsItem, proxyAction, 'entryType')}>`;
   } else {
-    types[action] = `ICollectionAction<${getTypeHandler(collectionsItem, action, 'resultType')}, ${getTypeHandler(
-      collectionsItem,
-      action,
-      'entryType',
-    )}>`;
+    types[action] = `${getTypeHandler(collectionsItem, action, 'resultType')}[]`;
   }
 
   return createType(types, action);
 }
 
-function createTypeForFragment(instance, action, actionType) {
+function getFragmentTypes(instance, action, actionType) {
   const {
     resultActionsMap,
     systemPropsList,
@@ -64,7 +73,6 @@ function createTypeForFragment(instance, action, actionType) {
   }
 
   const instanceOwnKeys = Object.getOwnPropertyNames(instance).filter(key => !systemPropsList.includes(key));
-  // console.log(instanceOwnKeys);
 
   const fragmentElements = instanceOwnKeys
     .filter(itemFiledName => {
@@ -84,7 +92,7 @@ function createTypeForFragment(instance, action, actionType) {
       );
     })
     .map(itemFiledName => ({
-      [itemFiledName]: { [action]: createTypeForFragment(instance[itemFiledName], action, actionType) },
+      [itemFiledName]: { [action]: getFragmentTypes(instance[itemFiledName], action, actionType) },
     }));
 
   const fragmentArrayFragments = instanceOwnKeys
@@ -105,23 +113,25 @@ function createTypeForFragment(instance, action, actionType) {
       }
 
       if (collectionWaitingTypes[action]) {
-        const { where, action: proxyAction, compare } = collectionWaitingTypes[action];
+        const { visible, where, action: proxyAction, compare } = collectionWaitingTypes[action];
         types[itemFiledName][action] = `ICollectionCheck<
-        ${createTypeForFragment(collectionsItem, where, 'resultType')},
-        ${createTypeForFragment(collectionsItem, proxyAction, 'entryType')},
-        ${createTypeForFragment(collectionsItem, compare, 'resultType')}
-      > | ${createTypeForFragment(collectionsItem, where, 'resultType')} | ${createTypeForFragment(
+        ${getFragmentTypes(collectionsItem, where, 'resultType')},
+        ${getFragmentTypes(collectionsItem, visible, 'entryType')},
+        ${getFragmentTypes(collectionsItem, proxyAction, 'resultType')},
+        ${getFragmentTypes(collectionsItem, compare, 'resultType')},
+      > | ${getFragmentTypes(collectionsItem, compare, 'resultType')} | ${getFragmentTypes(
           collectionsItem,
-          where,
+          compare,
           'resultType',
         )}[]`;
+      } else if (actionType === 'entryType' && collectionActionTypes[action]) {
+        const { visible, where, action: proxyAction } = collectionActionTypes[action];
+        types[itemFiledName][action] = `ICollectionAction<
+        ${getFragmentTypes(collectionsItem, where, 'resultType')},
+        ${getFragmentTypes(collectionsItem, visible, 'resultType')},
+        ${getFragmentTypes(collectionsItem, proxyAction, 'entryType')}>`;
       } else {
-        const { where, action: proxyAction } = collectionActionTypes[action];
-        types[itemFiledName][action] = `ICollectionAction<${createTypeForFragment(
-          collectionsItem,
-          where,
-          'resultType',
-        )}, ${createTypeForFragment(collectionsItem, proxyAction, 'entryType')}>`;
+        types[itemFiledName][action] = `${getFragmentTypes(collectionsItem, action, 'resultType')}[]`;
       }
 
       return types;
@@ -140,23 +150,25 @@ function createTypeForFragment(instance, action, actionType) {
       const types = { [itemFiledName]: {} };
 
       if (collectionWaitingTypes[action]) {
-        const { where, action: proxyAction, compare } = collectionWaitingTypes[action];
+        const { where, visible, action: proxyAction, compare } = collectionWaitingTypes[action];
         types[itemFiledName][action] = `ICollectionCheck<
         ${getElementType(collectionsItem, where, 'resultType')},
+        ${getElementType(collectionsItem, visible, 'resultType')},
         ${getElementType(collectionsItem, proxyAction, 'entryType')},
         ${getElementType(collectionsItem, compare, 'resultType')}
-      > | ${getElementType(collectionsItem, where, 'resultType')} | ${getElementType(
+      > | ${getElementType(collectionsItem, compare, 'resultType')} | ${getElementType(
           collectionsItem,
-          where,
+          compare,
           'resultType',
         )}[]`;
+      } else if (actionType === 'entryType' && collectionActionTypes[action]) {
+        const { where, visible, action: proxyAction } = collectionActionTypes[action];
+        types[itemFiledName][action] = `ICollectionAction<
+        ${getElementType(collectionsItem, where, 'resultType')},
+        ${getElementType(collectionsItem, visible, 'resultType')},
+        ${getElementType(collectionsItem, proxyAction, 'entryType')}>`;
       } else {
-        const { where, action: proxyAction } = collectionActionTypes[action];
-        types[itemFiledName][action] = `ICollectionAction<${getElementType(
-          collectionsItem,
-          where,
-          'resultType',
-        )}, ${getElementType(collectionsItem, proxyAction, 'entryType')}>`;
+        types[itemFiledName][action] = `${getElementType(collectionsItem, action, 'resultType')}[]`;
       }
 
       return types;
@@ -194,18 +206,11 @@ function getElementActionType(instance, action: string, actionType: string) {
 function getElementType(instance, action: string, actionType: string) {
   const { baseElementsActionsDescription } = getConfiguration();
   const prop = instance.constructor.name;
-  // console.log(
-  //   prop,
-  //   action,
-  //   actionType,
-  //   baseElementsActionsDescription[prop][action] && baseElementsActionsDescription[prop][action][actionType],
-  // );
   if (baseElementsActionsDescription[prop][action] && baseElementsActionsDescription[prop][action][actionType]) {
-    // console.log('XXXXXX');
     return `${prop}${baseElementsActionsDescription[prop][action][actionType]}`;
   }
 
   return '';
 }
 
-export { getElementsTypes, getCollectionTypes, createTypeForFragment };
+export { getCollectionTypes, getFragmentTypes, getElementsTypes, getElementType };

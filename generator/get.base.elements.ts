@@ -1,4 +1,17 @@
+/* eslint-disable sonarjs/cognitive-complexity, no-console*/
 import { getConfiguration } from './config';
+
+function checkThatElementHasAction(elementConstructorName, action) {
+  const { baseElementsActionsDescription } = getConfiguration();
+
+  if (baseElementsActionsDescription[elementConstructorName]) {
+    return Boolean(baseElementsActionsDescription[elementConstructorName][action]);
+  } else {
+    console.error(`${elementConstructorName} does not exist in 'baseElementsActionsDescription'`);
+
+    return false;
+  }
+}
 
 function findAllBaseElements(instance, baseElements = []) {
   const { systemPropsList, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
@@ -8,8 +21,8 @@ function findAllBaseElements(instance, baseElements = []) {
   if (fragment.constructor.name === baseLibraryDescription.collectionId) {
     baseElements.push(baseLibraryDescription.collectionId);
 
-    if (baseElementsActionsDescription[fragment[baseLibraryDescription.collectionItemId].constructor.name]) {
-      baseElements.push(fragment.InstanceType.constructor.name);
+    if (baseElementsActionsDescription[fragment[baseLibraryDescription.collectionItemId].name]) {
+      baseElements.push(fragment[baseLibraryDescription.collectionItemId].name);
     } else {
       const collectionInstance = new fragment[baseLibraryDescription.collectionItemId](
         fragment[baseLibraryDescription.rootLocatorId],
@@ -45,4 +58,4 @@ function findAllBaseElements(instance, baseElements = []) {
   return baseElements;
 }
 
-export { findAllBaseElements };
+export { findAllBaseElements, checkThatElementHasAction };

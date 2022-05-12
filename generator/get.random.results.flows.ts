@@ -1,6 +1,5 @@
 /* eslint-disable sonarjs/no-nested-template-literals */
-import { isObject, isArray } from 'sat-utils';
-import { camelize } from './utils';
+import { isObject, isArray, camelize } from 'sat-utils';
 import { getConfiguration } from './config';
 import { getPathesToCollections } from './get.fragments.for.random.getting';
 
@@ -12,31 +11,37 @@ function getFieldsEnumList(fieldsArr: string[]) {
 }
 
 function getPropPath(dataObj) {
-  if (isObject(dataObj)) {
+  if (isObject(dataObj) && !('_where' in (dataObj as object))) {
     return `${Object.keys(dataObj)[0]} ${getPropPath(dataObj[Object.keys(dataObj)[0]])}`;
   }
 
   return '';
 }
 
-function findNotObjectPropertyValue(dataObj) {
+function finTypedObject(dataObj) {
   for (const value of Object.values(dataObj)) {
-    return isObject(value) ? findNotObjectPropertyValue(value) : value;
+    if (isObject(value) && '_where' in (value as object)) {
+      return value;
+    }
+    return finTypedObject(value);
   }
 }
 
 function getFlowEntryType(dataObj) {
   const typeName = `T${camelize(getPropPath(dataObj))}`;
 
-  const field = findNotObjectPropertyValue(dataObj);
+  const { _action, _where, _visible } = finTypedObject(dataObj);
 
-  const exectLikePart = ' \nexcept?: string | string[];  \nlike?: string | string[];';
+  const exectLikePart = `  except?: string | string[];
+  like?: string | string[];
+  _where?: ${_where}
+  _visible?: ${_visible}`;
 
-  return field
+  return _action
     ? {
         typeName,
         type: `type ${typeName} = {
-  field?: ${getFieldsEnumList(field)};
+  field?: ${getFieldsEnumList(_action)};
 ${exectLikePart}
 };`,
       }
@@ -50,9 +55,13 @@ ${exectLikePart}
 
 function getReturnArgumentTemplate(dataObj) {
   return Object.keys(dataObj).reduce((template, key) => {
-    if (isObject(dataObj[key])) return `${template} ${key}: ${getReturnArgumentTemplate(dataObj[key])} }`;
-    else if (isArray(dataObj[key])) return `${template} ${key}: { action: { [data.field]: null } } }`;
-    else return `${template} ${key}: { action: null } }`;
+    if (isObject(dataObj[key]) && !('_where' in dataObj[key])) {
+      return `${template} ${key}: ${getReturnArgumentTemplate(dataObj[key])} }`;
+    } else if (isArray(dataObj[key])) {
+      return `${template} ${key}: { _action: { [data.field]: null, _where: data._where, _visible: data._visible } } }`;
+    } else {
+      return `${template} ${key}: { _action: null, _where: data._where, _visible: data._visible } }`;
+    }
   }, '{');
 }
 
@@ -61,8 +70,9 @@ function getReturnTemplateAndLastKey(dataObj) {
 
   function getReturnTemplate(dataObj) {
     return Object.keys(dataObj).reduce((template, key) => {
-      if (isObject(dataObj[key])) return `${template} ${key}: ${getReturnTemplate(dataObj[key])} }`;
-      else {
+      if (isObject(dataObj[key]) && !('_where' in dataObj[key])) {
+        return `${template} ${key}: ${getReturnTemplate(dataObj[key])} }`;
+      } else {
         lastKey = key;
         return `${template} ${key} }`;
       }

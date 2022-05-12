@@ -198,11 +198,13 @@ const baseElementsActionsDescription = {
 const collectionWaitingTypes = {
   waitForContentState: {
     where: 'get',
+    visible: 'isDisplayed'
     action: 'get',
     compare: 'get',
   },
   waitForVisibilityState: {
     where: 'get',
+    visible: 'isDisplayed'
     action: 'isDisplayed',
     compare: 'isDisplayed',
   },
@@ -211,18 +213,22 @@ const collectionWaitingTypes = {
 const collectionActionTypes = {
   get: {
     where: 'get',
+    visible: 'isDisplayed',
     action: 'get',
   },
   isDisplayed: {
     where: 'get',
+    visible: 'isDisplayed',
     action: 'isDisplayed',
   },
   sendKeys: {
     where: 'get',
+    visible: 'isDisplayed',
     action: 'sendKeys',
   },
   click: {
     where: 'get',
+    visible: 'isDisplayed',
     action: 'click',
   },
 };
@@ -263,7 +269,11 @@ const baseLibraryDescription = {
   fragmentId: 'Fragment',
   collectionId: 'Collection',
   collectionItemId: 'InstanceType',
+  waitOptionsId: 'IWaitOpts',
+  collectionActionId: 'ICollectionAction'
+  collectionCheckId: 'ICollectionCheck',
   getDataMethod: 'get'
+  getVisibilityMethod: 'isDisplayed'
 };
 
 module.exports = {
