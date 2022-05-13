@@ -42,7 +42,9 @@ function getPathesToCollections(fragmentInstance, name) {
           new fragment[field][baseLibraryDescription.collectionItemId](
             fragment[field][baseLibraryDescription.rootLocatorId],
             fragment[field][baseLibraryDescription.entityId],
-            fragment[field].rootElements.get(0),
+            fragment[field][baseLibraryDescription.collectionRootElementsId][
+              baseLibraryDescription.getBaseElementFromCollectionByIndex
+            ](0),
           ),
         );
       }
@@ -63,7 +65,9 @@ function getPathesToCollections(fragmentInstance, name) {
         const entity = new fragment[field][baseLibraryDescription.collectionItemId](
           fragment[field][baseLibraryDescription.rootLocatorId],
           fragment[field][baseLibraryDescription.entityId],
-          fragment[field].rootElements.get(0),
+          fragment[field][baseLibraryDescription.collectionRootElementsId][
+            baseLibraryDescription.getBaseElementFromCollectionByIndex
+          ](0),
         );
         const _action = getFragmentInteractionFields(entity);
         const _where = getFragmentTypes(entity, baseLibraryDescription.getDataMethod, 'resultType');
@@ -99,7 +103,9 @@ function getPathesToCollections(fragmentInstance, name) {
             new fragment[field][baseLibraryDescription.collectionItemId](
               fragment[field][baseLibraryDescription.rootLocatorId],
               fragment[field][baseLibraryDescription.entityId],
-              fragment[field].rootElements.get(0),
+              fragment[field][baseLibraryDescription.collectionRootElementsId][
+                baseLibraryDescription.getBaseElementFromCollectionByIndex
+              ](0),
             ),
             baseLibraryDescription.getDataMethod,
             'resultType',
@@ -108,7 +114,9 @@ function getPathesToCollections(fragmentInstance, name) {
             new fragment[field][baseLibraryDescription.collectionItemId](
               fragment[field][baseLibraryDescription.rootLocatorId],
               fragment[field][baseLibraryDescription.entityId],
-              fragment[field].rootElements.get(0),
+              fragment[field][baseLibraryDescription.collectionRootElementsId][
+                baseLibraryDescription.getBaseElementFromCollectionByIndex
+              ](0),
             ),
             baseLibraryDescription.getVisibilityMethod,
             'resultType',

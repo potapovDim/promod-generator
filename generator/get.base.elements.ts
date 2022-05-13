@@ -27,7 +27,9 @@ function findAllBaseElements(instance, baseElements = []) {
       const collectionInstance = new fragment[baseLibraryDescription.collectionItemId](
         fragment[baseLibraryDescription.rootLocatorId],
         fragment[baseLibraryDescription.entityId],
-        fragment.rootElements.get(0),
+        fragment[baseLibraryDescription.collectionRootElementsId][
+          baseLibraryDescription.getBaseElementFromCollectionByIndex
+        ](0),
       );
 
       const nestedBaseElements = findAllBaseElements(collectionInstance, []);

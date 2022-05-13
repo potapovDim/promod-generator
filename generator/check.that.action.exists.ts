@@ -22,16 +22,15 @@ function checkThatFragmentHasItemsToAction(fragment, action: string) {
         baseLibraryDescription.fragmentId,
       )
     ) {
-      const collection = fragment[fragmentChildFieldName];
-      const CollectionInstanceType = fragment[fragmentChildFieldName].InstanceType;
-      const result = checkThatFragmentHasItemsToAction(
-        new CollectionInstanceType(
-          collection[baseLibraryDescription.rootLocatorId],
-          collection[baseLibraryDescription.entityId],
-          collection.rootElements.get(0),
-        ),
-        action,
+      const collectionInstance = new fragment[baseLibraryDescription.collectionItemId](
+        fragment[baseLibraryDescription.rootLocatorId],
+        fragment[baseLibraryDescription.entityId],
+        fragment[baseLibraryDescription.collectionRootElementsId][
+          baseLibraryDescription.getBaseElementFromCollectionByIndex
+        ](0),
       );
+
+      const result = checkThatFragmentHasItemsToAction(collectionInstance, action);
 
       if (result) return result;
     } else if (

@@ -269,11 +269,13 @@ const baseLibraryDescription = {
   fragmentId: 'Fragment',
   collectionId: 'Collection',
   collectionItemId: 'InstanceType',
+  collectionRootElementsId: 'rootElements',
   waitOptionsId: 'IWaitOpts',
   collectionActionId: 'ICollectionAction'
   collectionCheckId: 'ICollectionCheck',
-  getDataMethod: 'get'
-  getVisibilityMethod: 'isDisplayed'
+  getDataMethod: 'get',
+  getVisibilityMethod: 'isDisplayed',
+  getBaseElementFromCollectionByIndex: 'get'
 };
 
 module.exports = {

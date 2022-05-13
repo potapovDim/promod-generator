@@ -18,7 +18,9 @@ function getCollectionTypes(instance, action, actionType) {
   const collectionsItem = new instance[baseLibraryDescription.collectionItemId](
     instance[baseLibraryDescription.rootLocatorId],
     instance[baseLibraryDescription.entityId],
-    instance.rootElements.get(0),
+    instance[baseLibraryDescription.collectionRootElementsId][
+      baseLibraryDescription.getBaseElementFromCollectionByIndex
+    ](0),
   );
 
   if (!checkThatFragmentHasItemsToAction(collectionsItem, action)) {
@@ -101,10 +103,12 @@ function getFragmentTypes(instance, action, actionType) {
       instance[itemFiledName][baseLibraryDescription.collectionItemId].name.includes(baseLibraryDescription.fragmentId),
     )
     .map(itemFiledName => {
-      const collectionsItem = new instance[itemFiledName].InstanceType(
+      const collectionsItem = new instance[itemFiledName][baseLibraryDescription.collectionItemId](
         instance[itemFiledName].identifier,
         instance[itemFiledName].rootLocator,
-        instance[itemFiledName].rootElements.get(0),
+        instance[itemFiledName][baseLibraryDescription.collectionRootElementsId][
+          baseLibraryDescription.getBaseElementFromCollectionByIndex
+        ](0),
       );
       const types = { [itemFiledName]: {} };
 
@@ -139,12 +143,17 @@ function getFragmentTypes(instance, action, actionType) {
 
   const fragmentArrayElements = instanceOwnKeys
     .filter(itemFiledName => instance[itemFiledName].constructor.name === baseLibraryDescription.collectionId)
-    .filter(itemFiledName => baseElementsActionsDescription[instance[itemFiledName].InstanceType.name])
+    .filter(
+      itemFiledName =>
+        baseElementsActionsDescription[instance[itemFiledName][baseLibraryDescription.collectionItemId].name],
+    )
     .map(itemFiledName => {
-      const collectionsItem = new instance[itemFiledName].InstanceType(
+      const collectionsItem = new instance[itemFiledName][baseLibraryDescription.collectionItemId](
         instance[itemFiledName].rootLocator,
         instance[itemFiledName].identifier,
-        instance[itemFiledName].rootElements.get(0),
+        instance[itemFiledName][baseLibraryDescription.collectionRootElementsId][
+          baseLibraryDescription.getBaseElementFromCollectionByIndex
+        ](0),
       );
 
       const types = { [itemFiledName]: {} };
