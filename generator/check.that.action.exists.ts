@@ -1,5 +1,5 @@
 /* eslint-disable complexity, sonarjs/cognitive-complexity, no-console*/
-import { getConfiguration } from './config';
+import { getConfiguration } from './config/config';
 import { checkThatElementHasAction } from './get.base.elements';
 
 function checkThatFragmentHasItemsToAction(fragment, action: string) {

@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/cognitive-complexity, no-console*/
-import { getConfiguration } from './config';
+import { getConfiguration } from './config/config';
 import { checkThatElementHasAction } from './get.base.elements';
 import { getFragmentTypes, getElementType } from './get.instance.elements.type';
 

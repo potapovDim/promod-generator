@@ -1,4 +1,4 @@
-import { getConfiguration } from './config';
+import { getConfiguration } from './config/config';
 
 const getElementImportType = elementName => {
   const { baseElementsActionsDescription } = getConfiguration();

@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import {} from 'sat-utils';
 import { getBaseImport } from './get.base.import';
 import { findAllBaseElements } from './get.base.elements';
-import { getConfiguration } from './config';
+import { getConfiguration } from './config/config';
 import { getActionFlows } from './get.action.flows';
 import { getAllBaseActions } from './utils';
 import { getRandomResultsFlows } from './get.random.results.flows';

@@ -1,6 +1,6 @@
 /* eslint-disable sonarjs/no-nested-template-literals */
 import { camelize } from 'sat-utils';
-import { getConfiguration } from './config';
+import { getConfiguration } from './config/config';
 import { getElementsTypes, getFragmentTypes } from './get.instance.elements.type';
 import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
 

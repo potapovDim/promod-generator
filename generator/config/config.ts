@@ -2,6 +2,8 @@
 import * as path from 'path';
 import * as fs from 'fs';
 
+import { validateBaseLibraryDescription } from './validator';
+
 const expectedConfigPath = path.resolve(process.cwd(), './promod.generator.config.js');
 
 function getConfiguration() {
@@ -11,6 +13,9 @@ function getConfiguration() {
 
   // eslint-disable-next-line
   const config = require(expectedConfigPath);
+  /** @info validation section */
+  validateBaseLibraryDescription(config.baseLibraryDescription);
+  /** ________________________ */
 
   return config;
 }

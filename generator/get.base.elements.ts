@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/cognitive-complexity, no-console*/
-import { getConfiguration } from './config';
+import { getConfiguration } from './config/config';
 
 function checkThatElementHasAction(elementConstructorName, action) {
   const { baseElementsActionsDescription } = getConfiguration();

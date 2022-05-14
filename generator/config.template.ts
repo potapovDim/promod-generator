@@ -271,7 +271,7 @@ const baseLibraryDescription = {
   collectionItemId: 'InstanceType',
   collectionRootElementsId: 'rootElements',
   waitOptionsId: 'IWaitOpts',
-  collectionActionId: 'ICollectionAction'
+  collectionActionId: 'ICollectionAction',
   collectionCheckId: 'ICollectionCheck',
   getDataMethod: 'get',
   getVisibilityMethod: 'isDisplayed',

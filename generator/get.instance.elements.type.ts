@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/prefer-switch, no-use-before-define, sonarjs/cognitive-complexity */
 import { createType } from './create.type';
-import { getConfiguration } from './config';
+import { getConfiguration } from './config/config';
 import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
 import { checkThatElementHasAction } from './get.base.elements';
 

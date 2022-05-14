@@ -1,6 +1,6 @@
 /* eslint-disable sonarjs/no-nested-template-literals */
 import { isObject, isArray, camelize } from 'sat-utils';
-import { getConfiguration } from './config';
+import { getConfiguration } from './config/config';
 import { getPathesToCollections } from './get.fragments.for.random.getting';
 
 function getFieldsEnumList(fieldsArr: string[]) {
