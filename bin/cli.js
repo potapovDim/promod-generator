@@ -11,7 +11,7 @@ const { hideBin } = require('yargs/helpers');
 const argv = yargs(hideBin(process.argv)).argv;
 
 const { createPageStructure } = require('../built/generate');
-const { createTemplateConfig } = require('../built/config.template');
+const { createTemplateConfig } = require('../built/config/config.template');
 
 if (argv.clihelp) {
   console.info(`
