@@ -23,13 +23,17 @@ function getCollectionTypes(instance, action, actionType) {
     ](0),
   );
 
-  if (!checkThatFragmentHasItemsToAction(collectionsItem, action)) {
-    return '';
-  }
-
   const getTypeHandler = baseElementsActionsDescription[collectionsItem.constructor.name]
     ? getElementType
     : getFragmentTypes;
+
+  const checkActionHandler = baseElementsActionsDescription[collectionsItem.constructor.name]
+    ? checkThatElementHasAction
+    : checkThatFragmentHasItemsToAction;
+
+  if (!checkActionHandler(collectionsItem, action)) {
+    return '';
+  }
 
   const types = {};
 
@@ -70,7 +74,7 @@ function getFragmentTypes(instance, action, actionType) {
 
   if (resultActionsMap[action] === 'void' && actionType === 'resultType') return 'void';
 
-  if (instance.constructor.name === 'Collection') {
+  if (instance.constructor.name === baseLibraryDescription.collectionId) {
     return getCollectionTypes(instance, action, actionType);
   }
 

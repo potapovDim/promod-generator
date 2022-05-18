@@ -1,8 +1,13 @@
 /* eslint-disable sonarjs/cognitive-complexity, no-console*/
+import { isString } from 'sat-utils';
 import { getConfiguration } from './config/config';
 
-function checkThatElementHasAction(elementConstructorName, action) {
+function checkThatElementHasAction(elementConstructorName: string, action: string) {
   const { baseElementsActionsDescription } = getConfiguration();
+
+  if (!isString(elementConstructorName)) {
+    elementConstructorName = (elementConstructorName as any as object).constructor.name;
+  }
 
   if (baseElementsActionsDescription[elementConstructorName]) {
     return Boolean(baseElementsActionsDescription[elementConstructorName][action]);

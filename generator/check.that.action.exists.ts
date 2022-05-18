@@ -5,6 +5,13 @@ import { checkThatElementHasAction } from './get.base.elements';
 function checkThatFragmentHasItemsToAction(fragment, action: string) {
   const { systemPropsList, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
 
+  if (
+    fragment.constructor.name === baseLibraryDescription.collectionId &&
+    baseElementsActionsDescription[fragment[baseLibraryDescription.collectionItemId]?.name]
+  ) {
+    return checkThatElementHasAction(fragment[baseLibraryDescription.collectionItemId]?.name, action);
+  }
+
   const pageFragments = Object.getOwnPropertyNames(fragment);
   const interactionFields = pageFragments.filter(item => !systemPropsList.includes(item));
 

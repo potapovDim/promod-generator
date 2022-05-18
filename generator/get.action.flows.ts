@@ -57,7 +57,9 @@ function getActionFlows(asActorAndPage: string, pageInstance: object, action: st
   const interactionFields = pageFields.filter(field => !systemPropsList.includes(field));
 
   const pageElementActions = interactionFields.filter(
-    field => baseElementsActionsDescription[pageInstance[field]?.constructor.name],
+    field =>
+      baseElementsActionsDescription[pageInstance[field]?.constructor.name] &&
+      baseElementsActionsDescription[pageInstance[field]?.constructor.name][action],
   );
 
   const pageFragmentsActions = interactionFields.filter(field =>
@@ -65,11 +67,7 @@ function getActionFlows(asActorAndPage: string, pageInstance: object, action: st
   );
 
   const pageElementAction = pageElementActions.length
-    ? createFlowTemplateForPageElements(
-        camelize(`${asActorAndPage} ${prettyMethodName[action] ? prettyMethodName[action] : action} PageElements`),
-        action,
-        pageInstance,
-      )
+    ? createFlowTemplateForPageElements(asActorAndPage, action, pageInstance)
     : '';
 
   return `
