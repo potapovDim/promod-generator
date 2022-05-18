@@ -3,25 +3,19 @@ import { createType } from './create.type';
 import { getConfiguration } from './config/config';
 import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
 import { checkThatElementHasAction } from './get.base.elements';
+import {
+  getCollectionItemInstance,
+  isCollectionWithItemBaseElement,
+  isCollectionWithItemFragment,
+} from './utils.collection';
 
 function getCollectionTypes(instance, action, actionType) {
-  const {
-    resultActionsMap,
-    baseElementsActionsDescription,
-    collectionWaitingTypes,
-    baseLibraryDescription,
-    collectionActionTypes,
-  } = getConfiguration();
+  const { resultActionsMap, baseElementsActionsDescription, collectionWaitingTypes, collectionActionTypes } =
+    getConfiguration();
 
   if (resultActionsMap[action] === 'void' && actionType === 'resultType') return 'void';
 
-  const collectionsItem = new instance[baseLibraryDescription.collectionItemId](
-    instance[baseLibraryDescription.rootLocatorId],
-    instance[baseLibraryDescription.entityId],
-    instance[baseLibraryDescription.collectionRootElementsId][
-      baseLibraryDescription.getBaseElementFromCollectionByIndex
-    ](0),
-  );
+  const collectionsItem = getCollectionItemInstance(instance);
 
   const getTypeHandler = baseElementsActionsDescription[collectionsItem.constructor.name]
     ? getElementType
@@ -102,18 +96,10 @@ function getFragmentTypes(instance, action, actionType) {
     }));
 
   const fragmentArrayFragments = instanceOwnKeys
-    .filter(itemFiledName => instance[itemFiledName].constructor.name === baseLibraryDescription.collectionId)
-    .filter(itemFiledName =>
-      instance[itemFiledName][baseLibraryDescription.collectionItemId].name.includes(baseLibraryDescription.fragmentId),
-    )
+    .filter(itemFiledName => instance[itemFiledName].constructor.name.includes(baseLibraryDescription.collectionId))
+    .filter(itemFiledName => isCollectionWithItemFragment(instance[itemFiledName]))
     .map(itemFiledName => {
-      const collectionsItem = new instance[itemFiledName][baseLibraryDescription.collectionItemId](
-        instance[itemFiledName].identifier,
-        instance[itemFiledName].rootLocator,
-        instance[itemFiledName][baseLibraryDescription.collectionRootElementsId][
-          baseLibraryDescription.getBaseElementFromCollectionByIndex
-        ](0),
-      );
+      const collectionsItem = getCollectionItemInstance(instance[itemFiledName]);
       const types = { [itemFiledName]: {} };
 
       if (!checkThatFragmentHasItemsToAction(collectionsItem, action)) {
@@ -147,10 +133,7 @@ function getFragmentTypes(instance, action, actionType) {
 
   const fragmentArrayElements = instanceOwnKeys
     .filter(itemFiledName => instance[itemFiledName].constructor.name === baseLibraryDescription.collectionId)
-    .filter(
-      itemFiledName =>
-        baseElementsActionsDescription[instance[itemFiledName][baseLibraryDescription.collectionItemId].name],
-    )
+    .filter(itemFiledName => isCollectionWithItemBaseElement(instance[itemFiledName]))
     .map(itemFiledName => {
       const collectionsItem = new instance[itemFiledName][baseLibraryDescription.collectionItemId](
         instance[itemFiledName].rootLocator,

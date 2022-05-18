@@ -2,55 +2,34 @@
 import { getConfiguration } from './config/config';
 import { checkThatElementHasAction } from './get.base.elements';
 import { getFragmentTypes, getElementType } from './get.instance.elements.type';
+import { getCollectionItemInstance, isCollectionWithItemBaseElement } from './utils.collection';
 
-function getFragmentInteractionFields(fragment) {
+function getFragmentInteractionFields(instance) {
   const { systemPropsList } = getConfiguration();
-  const fields = Object.getOwnPropertyNames(fragment);
+  const fields = Object.getOwnPropertyNames(instance);
   return fields.filter(item => !systemPropsList.includes(item));
 }
 
-function checThatAllFragmentFieldsAreBaseElements(fragment) {
+function checThatAllFragmentFieldsAreBaseElements(instance) {
   const { baseLibraryDescription } = getConfiguration();
-  const interactionFields = getFragmentInteractionFields(fragment);
+  const interactionFields = getFragmentInteractionFields(instance);
 
   return interactionFields.every(field =>
-    checkThatElementHasAction(fragment[field].constructor.name, baseLibraryDescription.getDataMethod),
+    checkThatElementHasAction(instance[field].constructor.name, baseLibraryDescription.getDataMethod),
   );
 }
 
-function getPathesToCollections(fragmentInstance, name) {
+function getPathesToCollections(childInstance, name) {
   const { systemPropsList, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
 
   function getPathToListIfExists(instance) {
     const pathes = {};
 
-    if (
-      instance?.constructor?.name.includes(baseLibraryDescription.collectionId) &&
-      baseElementsActionsDescription[instance[baseLibraryDescription.collectionItemId]?.name]
-    ) {
+    if (isCollectionWithItemBaseElement(instance)) {
+      const collectionItemInstance = getCollectionItemInstance(instance);
       const _action = null;
-      const _where = getElementType(
-        new instance[baseLibraryDescription.collectionItemId](
-          instance[baseLibraryDescription.rootLocatorId],
-          instance[baseLibraryDescription.entityId],
-          instance[baseLibraryDescription.collectionRootElementsId][
-            baseLibraryDescription.getBaseElementFromCollectionByIndex
-          ](0),
-        ),
-        baseLibraryDescription.getDataMethod,
-        'resultType',
-      );
-      const _visible = getElementType(
-        new instance[baseLibraryDescription.collectionItemId](
-          instance[baseLibraryDescription.rootLocatorId],
-          instance[baseLibraryDescription.entityId],
-          instance[baseLibraryDescription.collectionRootElementsId][
-            baseLibraryDescription.getBaseElementFromCollectionByIndex
-          ](0),
-        ),
-        baseLibraryDescription.getVisibilityMethod,
-        'resultType',
-      );
+      const _where = getElementType(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
+      const _visible = getElementType(collectionItemInstance, baseLibraryDescription.getVisibilityMethod, 'resultType');
 
       return { _action, _where, _visible };
     }
@@ -69,15 +48,9 @@ function getPathesToCollections(fragmentInstance, name) {
       );
 
       if (isFieldCollection && isCollectionItemFragment) {
-        doesCollectionItemHaveAllBaseElements = checThatAllFragmentFieldsAreBaseElements(
-          new instance[field][baseLibraryDescription.collectionItemId](
-            instance[field][baseLibraryDescription.rootLocatorId],
-            instance[field][baseLibraryDescription.entityId],
-            instance[field][baseLibraryDescription.collectionRootElementsId][
-              baseLibraryDescription.getBaseElementFromCollectionByIndex
-            ](0),
-          ),
-        );
+        const collectionItemInstance = getCollectionItemInstance(instance[field]);
+
+        doesCollectionItemHaveAllBaseElements = checThatAllFragmentFieldsAreBaseElements(collectionItemInstance);
       }
 
       if (childConstructorName.includes(baseLibraryDescription.fragmentId)) {
@@ -93,16 +66,15 @@ function getPathesToCollections(fragmentInstance, name) {
           return pathes;
         }
       } else if (isFieldCollection && isCollectionItemFragment && doesCollectionItemHaveAllBaseElements) {
-        const entity = new instance[field][baseLibraryDescription.collectionItemId](
-          instance[field][baseLibraryDescription.rootLocatorId],
-          instance[field][baseLibraryDescription.entityId],
-          instance[field][baseLibraryDescription.collectionRootElementsId][
-            baseLibraryDescription.getBaseElementFromCollectionByIndex
-          ](0),
+        const collectionItemInstance = getCollectionItemInstance(instance[field]);
+
+        const _action = getFragmentInteractionFields(collectionItemInstance);
+        const _where = getFragmentTypes(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
+        const _visible = getFragmentTypes(
+          collectionItemInstance,
+          baseLibraryDescription.getVisibilityMethod,
+          'resultType',
         );
-        const _action = getFragmentInteractionFields(entity);
-        const _where = getFragmentTypes(entity, baseLibraryDescription.getDataMethod, 'resultType');
-        const _visible = getFragmentTypes(entity, baseLibraryDescription.getVisibilityMethod, 'resultType');
 
         pathes[field] = {
           _visible,
@@ -129,26 +101,12 @@ function getPathesToCollections(fragmentInstance, name) {
         }
 
         if (result) {
+          const collectionItemInstance = getCollectionItemInstance(instance[field]);
+
           const _action = null;
-          const _where = getElementType(
-            new instance[field][baseLibraryDescription.collectionItemId](
-              instance[field][baseLibraryDescription.rootLocatorId],
-              instance[field][baseLibraryDescription.entityId],
-              instance[field][baseLibraryDescription.collectionRootElementsId][
-                baseLibraryDescription.getBaseElementFromCollectionByIndex
-              ](0),
-            ),
-            baseLibraryDescription.getDataMethod,
-            'resultType',
-          );
+          const _where = getElementType(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
           const _visible = getElementType(
-            new instance[field][baseLibraryDescription.collectionItemId](
-              instance[field][baseLibraryDescription.rootLocatorId],
-              instance[field][baseLibraryDescription.entityId],
-              instance[field][baseLibraryDescription.collectionRootElementsId][
-                baseLibraryDescription.getBaseElementFromCollectionByIndex
-              ](0),
-            ),
+            collectionItemInstance,
             baseLibraryDescription.getVisibilityMethod,
             'resultType',
           );
@@ -164,7 +122,7 @@ function getPathesToCollections(fragmentInstance, name) {
     }
   }
 
-  const result = getPathToListIfExists(fragmentInstance);
+  const result = getPathToListIfExists(childInstance);
 
   if (result) return { [name]: result };
 }

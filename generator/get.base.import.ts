@@ -1,6 +1,6 @@
 import { getConfiguration } from './config/config';
 
-const getElementImportType = elementName => {
+function getElementImportType(elementName) {
   const { baseElementsActionsDescription } = getConfiguration();
 
   const avaliableAtions = Array.from(
@@ -12,9 +12,9 @@ const getElementImportType = elementName => {
   );
 
   return avaliableAtions.reduce((actionTypes, actionType) => `${actionTypes} ${elementName}${actionType},`, ``);
-};
+}
 
-const getBaseImport = baseElements => {
+function getBaseImport(baseElements) {
   const { baseLibraryDescription } = getConfiguration();
   const uniqBaseElements = Array.from(new Set(baseElements));
 
@@ -28,6 +28,6 @@ const getBaseImport = baseElements => {
       (importString, element) => `${importString}\n  ${getElementImportType(element)}`,
       `${baseLibraryDescription.waitOptionsId}, ${collectionActionsImportPart}`,
     );
-};
+}
 
 export { getBaseImport };
