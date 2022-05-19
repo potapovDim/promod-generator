@@ -1,6 +1,7 @@
 /* eslint-disable complexity, sonarjs/cognitive-complexity, no-console*/
 import { getConfiguration } from './config/config';
-import { checkThatElementHasAction } from './get.base.elements';
+import { checkThatElementHasAction } from './get.base';
+import { getFragmentInteractionFields } from './utils';
 import {
   getCollectionItemInstance,
   isCollectionWithItemBaseElement,
@@ -8,14 +9,13 @@ import {
 } from './utils.collection';
 
 function checkThatFragmentHasItemsToAction(instance, action: string) {
-  const { systemPropsList, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
+  const { baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
 
   if (isCollectionWithItemBaseElement(instance)) {
     return checkThatElementHasAction(instance[baseLibraryDescription.collectionItemId]?.name, action);
   }
 
-  const pageFragments = Object.getOwnPropertyNames(instance);
-  const interactionFields = pageFragments.filter(item => !systemPropsList.includes(item));
+  const interactionFields = getFragmentInteractionFields(instance);
 
   let result = false;
   for (const fragmentChildFieldName of interactionFields) {

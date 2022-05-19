@@ -2,7 +2,8 @@
 import { createType } from './create.type';
 import { getConfiguration } from './config/config';
 import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
-import { checkThatElementHasAction } from './get.base.elements';
+import { checkThatElementHasAction, getElementActionType, getElementType } from './get.base';
+import { getFragmentInteractionFields } from './utils';
 import {
   getCollectionItemInstance,
   isCollectionWithItemBaseElement,
@@ -59,7 +60,6 @@ function getCollectionTypes(instance, action, actionType) {
 function getFragmentTypes(instance, action, actionType) {
   const {
     resultActionsMap,
-    systemPropsList,
     baseElementsActionsDescription,
     collectionWaitingTypes,
     baseLibraryDescription,
@@ -72,7 +72,7 @@ function getFragmentTypes(instance, action, actionType) {
     return getCollectionTypes(instance, action, actionType);
   }
 
-  const instanceOwnKeys = Object.getOwnPropertyNames(instance).filter(key => !systemPropsList.includes(key));
+  const instanceOwnKeys = getFragmentInteractionFields(instance);
 
   const fragmentElements = instanceOwnKeys
     .filter(itemFiledName => {
@@ -177,36 +177,15 @@ function getFragmentTypes(instance, action, actionType) {
 }
 
 function getElementsTypes(instance, action, actionType) {
-  const { resultActionsMap, baseElementsActionsDescription } = getConfiguration();
+  const { resultActionsMap } = getConfiguration();
+
   if (resultActionsMap[action] === 'void' && actionType === 'resultType') return 'void';
 
-  const instanceElements = Object.getOwnPropertyNames(instance)
-    .filter(itemFiledName => baseElementsActionsDescription[instance[itemFiledName]?.constructor?.name])
+  const instanceElements = getFragmentInteractionFields(instance)
+    .filter(itemFiledName => checkThatElementHasAction(instance[itemFiledName], action))
     .map(itemFiledName => ({ [itemFiledName]: getElementActionType(instance[itemFiledName], action, actionType) }));
 
   return createType(Array.from(instanceElements), action);
 }
 
-function getElementActionType(instance, action: string, actionType: string) {
-  const { baseElementsActionsDescription } = getConfiguration();
-  const prop = instance.constructor.name;
-
-  const types = {};
-  if (baseElementsActionsDescription[prop][action] && baseElementsActionsDescription[prop][action][actionType]) {
-    types[action] = `${prop}${baseElementsActionsDescription[prop][action][actionType]}`;
-  }
-
-  return types;
-}
-
-function getElementType(instance, action: string, actionType: string) {
-  const { baseElementsActionsDescription } = getConfiguration();
-  const prop = instance.constructor.name;
-  if (baseElementsActionsDescription[prop][action] && baseElementsActionsDescription[prop][action][actionType]) {
-    return `${prop}${baseElementsActionsDescription[prop][action][actionType]}`;
-  }
-
-  return '';
-}
-
-export { getCollectionTypes, getFragmentTypes, getElementsTypes, getElementType };
+export { getCollectionTypes, getFragmentTypes, getElementsTypes };

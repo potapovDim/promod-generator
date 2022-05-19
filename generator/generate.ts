@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import {} from 'sat-utils';
 import { getBaseImport } from './get.base.import';
-import { findAllBaseElements } from './get.base.elements';
+import { getAllBaseElements } from './get.base';
 import { getConfiguration } from './config/config';
 import { getActionFlows } from './get.action.flows';
 import { getAllBaseActions } from './utils';
@@ -37,14 +37,14 @@ const createPageStructure = (pagePath: string) => {
 
   const globalImport = `import { toArray, getRandomArrayItem } from 'sat-utils';
 import {
-    ${getBaseImport(findAllBaseElements(pageInstance))}
+    ${getBaseImport(getAllBaseElements(pageInstance))}
   } from '${pathToLibFolder}${pathToBase}';`;
 
   const pageName = pageInstance.identifier;
 
   const asActorAndPage = `on ${pageName}`;
 
-  const actions = getAllBaseActions(baseElementsActionsDescription);
+  const actions = getAllBaseActions();
 
   const randomResultsFlowsTemplate = getRandomResultsFlows(asActorAndPage, pageInstance);
 

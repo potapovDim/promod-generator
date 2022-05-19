@@ -1,26 +1,30 @@
 /* eslint-disable sonarjs/cognitive-complexity, no-console*/
-import { getConfiguration } from './config/config';
-import { checkThatElementHasAction } from './get.base.elements';
-import { getFragmentTypes, getElementType } from './get.instance.elements.type';
-import { getCollectionItemInstance, isCollectionWithItemBaseElement } from './utils.collection';
 
-function getFragmentInteractionFields(instance) {
-  const { systemPropsList } = getConfiguration();
-  const fields = Object.getOwnPropertyNames(instance);
-  return fields.filter(item => !systemPropsList.includes(item));
-}
+// TODO how to handle collection in collection
+
+import { getConfiguration } from './config/config';
+import { getElementsTypes } from './get.instance.elements.type';
+import { getFragmentInteractionFields } from './utils';
+import {
+  checkThatElementHasAction,
+  getElementType,
+  checkThatBaseElement,
+  getFragmentBaseElementsFields,
+} from './get.base';
+import {
+  getCollectionItemInstance,
+  isCollectionWithItemBaseElement,
+  isCollectionWithItemFragment,
+} from './utils.collection';
 
 function checThatAllFragmentFieldsAreBaseElements(instance) {
-  const { baseLibraryDescription } = getConfiguration();
   const interactionFields = getFragmentInteractionFields(instance);
 
-  return interactionFields.every(field =>
-    checkThatElementHasAction(instance[field].constructor.name, baseLibraryDescription.getDataMethod),
-  );
+  return interactionFields.every(field => checkThatBaseElement(instance[field]));
 }
 
 function getPathesToCollections(childInstance, name) {
-  const { systemPropsList, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
+  const { baseLibraryDescription } = getConfiguration();
 
   function getPathToListIfExists(instance) {
     const pathes = {};
@@ -34,43 +38,27 @@ function getPathesToCollections(childInstance, name) {
       return { _action, _where, _visible };
     }
 
-    const fields = Object.getOwnPropertyNames(instance);
-
-    const interactionFields = fields.filter(item => !systemPropsList.includes(item));
+    const interactionFields = getFragmentInteractionFields(instance);
 
     for (const field of interactionFields) {
       const childConstructorName = instance[field].constructor.name;
-      let doesCollectionItemHaveAllBaseElements;
-
-      const isFieldCollection = childConstructorName.includes(baseLibraryDescription.collectionId);
-      const isCollectionItemFragment = instance[field][baseLibraryDescription.collectionItemId]?.name.includes(
-        baseLibraryDescription.fragmentId,
-      );
-
-      if (isFieldCollection && isCollectionItemFragment) {
-        const collectionItemInstance = getCollectionItemInstance(instance[field]);
-
-        doesCollectionItemHaveAllBaseElements = checThatAllFragmentFieldsAreBaseElements(collectionItemInstance);
-      }
 
       if (childConstructorName.includes(baseLibraryDescription.fragmentId)) {
-        pathes[field] = {};
-
         const result = getPathToListIfExists(instance[field]);
-        if (!result) {
-          delete pathes[field];
-        }
 
         if (result) {
           pathes[field] = result;
           return pathes;
         }
-      } else if (isFieldCollection && isCollectionItemFragment && doesCollectionItemHaveAllBaseElements) {
+      } else if (
+        isCollectionWithItemFragment(instance[field]) &&
+        checThatAllFragmentFieldsAreBaseElements(getCollectionItemInstance(instance[field]))
+      ) {
         const collectionItemInstance = getCollectionItemInstance(instance[field]);
 
         const _action = getFragmentInteractionFields(collectionItemInstance);
-        const _where = getFragmentTypes(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
-        const _visible = getFragmentTypes(
+        const _where = getElementsTypes(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
+        const _visible = getElementsTypes(
           collectionItemInstance,
           baseLibraryDescription.getVisibilityMethod,
           'resultType',
@@ -83,22 +71,32 @@ function getPathesToCollections(childInstance, name) {
         };
 
         return pathes;
-      } else if (isFieldCollection && isCollectionItemFragment) {
-        // TODO need investigate how to handle collection in collection
       } else if (
-        childConstructorName.includes(baseLibraryDescription.collectionId) &&
-        baseElementsActionsDescription[instance[field][baseLibraryDescription.collectionItemId]?.name]
+        isCollectionWithItemFragment(instance[field]) &&
+        getFragmentBaseElementsFields(getCollectionItemInstance(instance[field])).length
       ) {
-        pathes[field] = {};
+        const collectionItemInstance = getCollectionItemInstance(instance[field]);
 
+        const _action = getFragmentBaseElementsFields(getCollectionItemInstance(instance[field]));
+        const _where = getElementsTypes(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
+        const _visible = getElementsTypes(
+          collectionItemInstance,
+          baseLibraryDescription.getVisibilityMethod,
+          'resultType',
+        );
+
+        pathes[field] = {
+          _visible,
+          _where,
+          _action,
+        };
+
+        return pathes;
+      } else if (isCollectionWithItemBaseElement(instance[field])) {
         const result = checkThatElementHasAction(
           instance[field][baseLibraryDescription.collectionItemId]?.name,
           baseLibraryDescription.getDataMethod,
         );
-
-        if (!result) {
-          delete pathes[field];
-        }
 
         if (result) {
           const collectionItemInstance = getCollectionItemInstance(instance[field]);

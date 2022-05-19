@@ -3,6 +3,7 @@ import { camelize } from 'sat-utils';
 import { getConfiguration } from './config/config';
 import { getElementsTypes, getFragmentTypes } from './get.instance.elements.type';
 import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
+import { checkThatElementHasAction } from './get.base';
 
 function getTemplatedCode({ name, typeName, flowArgumentType, flowResultType, optionsSecondArgument, action, field }) {
   return `type ${typeName} = ${flowArgumentType}
@@ -50,24 +51,20 @@ const ${flowActionName} = async function(data: ${typeName}${optionsSecondArgumen
 };\n`;
 }
 
-function getActionFlows(asActorAndPage: string, pageInstance: object, action: string) {
-  const { baseElementsActionsDescription, systemPropsList, prettyMethodName = {} } = getConfiguration();
+function getActionFlows(asActorAndPage: string, instance: object, action: string) {
+  const { systemPropsList, prettyMethodName = {} } = getConfiguration();
 
-  const pageFields = Object.getOwnPropertyNames(pageInstance);
+  const pageFields = Object.getOwnPropertyNames(instance);
   const interactionFields = pageFields.filter(field => !systemPropsList.includes(field));
 
-  const pageElementActions = interactionFields.filter(
-    field =>
-      baseElementsActionsDescription[pageInstance[field]?.constructor.name] &&
-      baseElementsActionsDescription[pageInstance[field]?.constructor.name][action],
-  );
+  const pageElementActions = interactionFields.filter(field => checkThatElementHasAction(instance[field], action));
 
   const pageFragmentsActions = interactionFields.filter(field =>
-    checkThatFragmentHasItemsToAction(pageInstance[field], action),
+    checkThatFragmentHasItemsToAction(instance[field], action),
   );
 
   const pageElementAction = pageElementActions.length
-    ? createFlowTemplateForPageElements(asActorAndPage, action, pageInstance)
+    ? createFlowTemplateForPageElements(asActorAndPage, action, instance)
     : '';
 
   return `
@@ -76,11 +73,9 @@ ${pageFragmentsActions.reduce(
   (template, fragmentFieldName) => {
     const prettyFlowActionNamePart = prettyMethodName[action] || action;
 
-    const name = camelize(
-      `${asActorAndPage} ${prettyFlowActionNamePart} ${pageInstance[fragmentFieldName].identifier}`,
-    );
+    const name = camelize(`${asActorAndPage} ${prettyFlowActionNamePart} ${instance[fragmentFieldName].identifier}`);
 
-    return `${template}\n${createFlowTemplates(name, action, fragmentFieldName, pageInstance[fragmentFieldName])}\n`;
+    return `${template}\n${createFlowTemplates(name, action, fragmentFieldName, instance[fragmentFieldName])}\n`;
   },
   `\n
 `,
