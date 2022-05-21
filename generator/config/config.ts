@@ -5,14 +5,15 @@ import * as fs from 'fs';
 import { validateBaseLibraryDescription } from './validator';
 
 const expectedConfigPath = path.resolve(process.cwd(), './promod.generator.config.js');
+const generalConfigPath = path.resolve(process.cwd(), './promod.system.config.js');
 
 function getConfiguration() {
-  if (!fs.existsSync(expectedConfigPath)) {
-    throw new Error(`${expectedConfigPath} does not exist`);
+  if (!fs.existsSync(expectedConfigPath) && !fs.existsSync(generalConfigPath)) {
+    throw new Error(`${expectedConfigPath} does not exist and ${generalConfigPath} does not exist`);
   }
 
-  // eslint-disable-next-line
-  const config = require(expectedConfigPath);
+  const config = require(fs.existsSync(expectedConfigPath) ? expectedConfigPath : generalConfigPath);
+
   /** @info validation section */
   validateBaseLibraryDescription(config.baseLibraryDescription);
   /** ________________________ */
