@@ -110,8 +110,8 @@ function getFragmentTypes(instance, action, actionType) {
         const { visible, where, action: proxyAction, compare } = collectionWaitingTypes[action];
         types[itemFiledName][action] = `ICollectionCheck<
         ${getFragmentTypes(collectionsItem, where, 'resultType')},
-        ${getFragmentTypes(collectionsItem, visible, 'entryType')},
-        ${getFragmentTypes(collectionsItem, proxyAction, 'resultType')},
+        ${getFragmentTypes(collectionsItem, visible, 'resultType')},
+        ${getFragmentTypes(collectionsItem, proxyAction, 'entryType')},
         ${getFragmentTypes(collectionsItem, compare, 'resultType')},
       > | ${getFragmentTypes(collectionsItem, compare, 'resultType')} | ${getFragmentTypes(
           collectionsItem,
