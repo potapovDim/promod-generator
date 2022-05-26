@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import {} from 'sat-utils';
+import { isString, isRegExp } from 'sat-utils';
 import { getBaseImport } from './get.base.import';
 import { getAllBaseElements } from './get.base';
 import { getConfiguration } from './config/config';
@@ -11,7 +11,7 @@ import { getRandomResultsFlows } from './get.random.results.flows';
 const flowMatcher = /(?<=const ).*(?= = async)/gim;
 
 const createPageStructure = (pagePath: string) => {
-  const { pathToBase, baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
+  const { pathToBase, baseLibraryDescription } = getConfiguration();
   const frameworkPath = process.cwd();
   const pageRelativePath = path.basename(pagePath);
   const pageRelativeTsPath = pageRelativePath.replace('.ts', '');
@@ -25,9 +25,15 @@ const createPageStructure = (pagePath: string) => {
 
   const pageModule = require(pagePath);
 
-  const PageClass = Object.values(pageModule as { [k: string]: any }).find(exportedItem =>
-    exportedItem.name.includes(baseLibraryDescription.pageId),
-  );
+  const PageClass = Object.values(pageModule as { [k: string]: any }).find(({ name }: { name: string }) => {
+    if (isString(baseLibraryDescription.pageId)) {
+      return name.includes(baseLibraryDescription.pageId);
+    } else if (isRegExp(baseLibraryDescription.pageId)) {
+      return name.match(baseLibraryDescription.pageId);
+    } else {
+      throw new TypeError('"pageId" should exist in "baseLibraryDescription", pageId should be a string or regexp');
+    }
+  });
 
   if (!PageClass) {
     throw new Error(`Page Class was not found. Search pattern is '${baseLibraryDescription.pageId}'`);

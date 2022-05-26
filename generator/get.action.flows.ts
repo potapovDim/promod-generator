@@ -52,7 +52,7 @@ const ${flowActionName} = async function(data: ${typeName}${optionsSecondArgumen
 }
 
 function getActionFlows(asActorAndPage: string, instance: object, action: string) {
-  const { systemPropsList, prettyMethodName = {} } = getConfiguration();
+  const { systemPropsList, prettyMethodName = {}, baseLibraryDescription } = getConfiguration();
 
   const pageFields = Object.getOwnPropertyNames(instance);
   const interactionFields = pageFields.filter(field => !systemPropsList.includes(field));
@@ -73,7 +73,9 @@ ${pageFragmentsActions.reduce(
   (template, fragmentFieldName) => {
     const prettyFlowActionNamePart = prettyMethodName[action] || action;
 
-    const name = camelize(`${asActorAndPage} ${prettyFlowActionNamePart} ${instance[fragmentFieldName].identifier}`);
+    const instanceFieldIdentifier = instance[fragmentFieldName][baseLibraryDescription.entityId];
+
+    const name = camelize(`${asActorAndPage} ${prettyFlowActionNamePart} ${instanceFieldIdentifier}`);
 
     return `${template}\n${createFlowTemplates(name, action, fragmentFieldName, instance[fragmentFieldName])}\n`;
   },
