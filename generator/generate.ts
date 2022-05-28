@@ -8,10 +8,13 @@ import { getActionFlows } from './get.action.flows';
 import { getAllBaseActions } from './utils';
 import { getRandomResultsFlows } from './get.random.results.flows';
 
-const flowMatcher = /(?<=const ).*(?= = async)/gim;
+const flowExpressionMatcher = /(?<=const ).*(?= = async)/gim;
+const flowDeclarationMatcher = /(?<=function ).*(?=\()/gim;
 
 const createPageStructure = (pagePath: string) => {
-  const { pathToBase, baseLibraryDescription } = getConfiguration();
+  const { pathToBase, baseLibraryDescription, promod = {} } = getConfiguration();
+
+  const flowMatcher = promod.actionsDeclaration === 'declaration' ? flowDeclarationMatcher : flowExpressionMatcher;
   const frameworkPath = process.cwd();
   const pageRelativePath = path.basename(pagePath);
   const pageRelativeTsPath = pageRelativePath.replace('.ts', '');

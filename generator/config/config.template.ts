@@ -278,9 +278,14 @@ const baseLibraryDescription = {
   getBaseElementFromCollectionByIndex: 'get'
 };
 
+const promod = {
+  actionsDeclaration: 'declaration',
+};
+
 module.exports = {
-  baseElementsActionsDescription,
   pathToBase: 'lib',
+  promod,
+  baseElementsActionsDescription,
   systemPropsList,
   collectionWaitingTypes,
   collectionActionTypes,
