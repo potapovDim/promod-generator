@@ -197,39 +197,39 @@ const baseElementsActionsDescription = {
 
 const collectionWaitingTypes = {
   waitForContentState: {
-    where: 'get',
-    visible: 'isDisplayed'
-    action: 'get',
-    compare: 'get',
+    where: { action: 'waitForContentState', type: 'entryType' },
+    visible: { action: 'waitForVisibilityState', type: 'entryType' },
+    action: { action: 'get', type: 'entryType' },
+    compare: { action: 'get', type: 'resultType' },
   },
   waitForVisibilityState: {
-    where: 'get',
-    visible: 'isDisplayed'
-    action: 'isDisplayed',
-    compare: 'isDisplayed',
+    where: { action: 'waitForContentState', type: 'entryType' },
+    visible: { action: 'waitForVisibilityState', type: 'entryType' },
+    action: { action: 'isDisplayed', type: 'entryType' },
+    compare: { action: 'isDisplayed', type: 'resultType' },
   },
 };
 
 const collectionActionTypes = {
   get: {
-    where: 'get',
-    visible: 'isDisplayed',
-    action: 'get',
+    where: { action: 'waitForContentState', type: 'entryType' },
+    visible: { action: 'waitForVisibilityState', type: 'entryType' },
+    action: { action: 'get', type: 'entryType' },
   },
   isDisplayed: {
-    where: 'get',
-    visible: 'isDisplayed',
-    action: 'isDisplayed',
+    where: { action: 'waitForContentState', type: 'entryType' },
+    visible: { action: 'waitForVisibilityState', type: 'entryType' },
+    action: { action: 'isDisplayed', type: 'entryType' },
   },
   sendKeys: {
-    where: 'get',
-    visible: 'isDisplayed',
-    action: 'sendKeys',
+    where: { action: 'waitForContentState', type: 'entryType' },
+    visible: { action: 'waitForVisibilityState', type: 'entryType' },
+    action: { action: 'sendKeys', type: 'entryType' },
   },
   click: {
-    where: 'get',
-    visible: 'isDisplayed',
-    action: 'click',
+    where: { action: 'waitForContentState', type: 'entryType' },
+    visible: { action: 'waitForVisibilityState', type: 'entryType' },
+    action: { action: 'click', type: 'entryType' },
   },
 };
 

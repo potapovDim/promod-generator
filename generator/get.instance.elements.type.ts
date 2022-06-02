@@ -10,6 +10,17 @@ import {
   isCollectionWithItemFragment,
 } from './utils.collection';
 
+function getColletionActionType(collectionsItem, getTypes, collectionActionType) {
+  return Object.keys(collectionActionType).reduce((typeSctring, actionKey, index, allActions) => {
+    const actionDescriptor = collectionActionType[actionKey] as { action: string; actionType: string };
+    typeSctring +=
+      index === 0 || allActions.length - 1 !== index
+        ? `${getTypes(collectionsItem, actionDescriptor.action, actionDescriptor.actionType)},`
+        : `${getTypes(collectionsItem, actionDescriptor.action, actionDescriptor.actionType)}`;
+    return typeSctring;
+  }, '');
+}
+
 function getCollectionTypes(instance, action, actionType) {
   const {
     baseLibraryDescription,
@@ -38,20 +49,19 @@ function getCollectionTypes(instance, action, actionType) {
   const types = {};
 
   if (collectionWaitingTypes[action]) {
-    const { visible, where, action: proxyAction, compare } = collectionWaitingTypes[action];
-    types[action] = `${baseLibraryDescription.collectionCheckId}<
-    ${getTypeHandler(collectionsItem, where, 'resultType')},
-    ${getTypeHandler(collectionsItem, visible, 'resultType')},
-    ${getTypeHandler(collectionsItem, proxyAction, 'entryType')},
-    ${getTypeHandler(collectionsItem, compare, 'resultType')}
-  > | ${getTypeHandler(collectionsItem, compare, 'resultType')}
-    | ${getTypeHandler(collectionsItem, compare, 'resultType')}[]`;
+    const actionDescriptor = collectionWaitingTypes[action];
+
+    const colletionItemType = getColletionActionType(collectionsItem, getTypeHandler, actionDescriptor);
+
+    types[action] = `${baseLibraryDescription.collectionCheckId}<${colletionItemType}>
+    | ${getTypeHandler(collectionsItem, actionDescriptor.compare.action, actionDescriptor.compare.actionType)}
+    | ${getTypeHandler(collectionsItem, actionDescriptor.compare.action, actionDescriptor.compare.actionType)}[]`;
   } else if (actionType === 'entryType' && collectionActionTypes[action]) {
-    const { where, visible, action: proxyAction } = collectionActionTypes[action];
-    types[action] = `${baseLibraryDescription.collectionActionId}<
-    ${getTypeHandler(collectionsItem, where, 'resultType')},
-    ${getTypeHandler(collectionsItem, visible, 'resultType')},
-     ${getTypeHandler(collectionsItem, proxyAction, 'entryType')}>`;
+    const actionDescriptor = collectionActionTypes[action];
+
+    const colletionItemType = getColletionActionType(collectionsItem, getTypeHandler, actionDescriptor);
+
+    types[action] = `${baseLibraryDescription.collectionActionId}<${colletionItemType}>`;
   } else {
     types[action] = `${getTypeHandler(collectionsItem, action, 'resultType')}[]`;
   }
@@ -109,21 +119,26 @@ function getFragmentTypes(instance, action, actionType) {
       }
 
       if (collectionWaitingTypes[action]) {
-        const { visible, where, action: proxyAction, compare } = collectionWaitingTypes[action];
+        const actionDescriptor = collectionWaitingTypes[action];
 
-        types[itemFiledName][action] = `${baseLibraryDescription.collectionCheckId}<
-        ${getFragmentTypes(collectionsItem, where, 'resultType')},
-        ${getFragmentTypes(collectionsItem, visible, 'resultType')},
-        ${getFragmentTypes(collectionsItem, proxyAction, 'entryType')},
-        ${getFragmentTypes(collectionsItem, compare, 'resultType')},
-      > | ${getFragmentTypes(collectionsItem, compare, 'resultType')}
-        | ${getFragmentTypes(collectionsItem, compare, 'resultType')}[]`;
+        const colletionItemType = getColletionActionType(collectionsItem, getFragmentTypes, actionDescriptor);
+
+        types[itemFiledName][action] = `${baseLibraryDescription.collectionCheckId}<${colletionItemType}>
+        | ${getFragmentTypes(
+          collectionsItem,
+          collectionWaitingTypes[action].compare.action,
+          collectionWaitingTypes[action].compare.actionType,
+        )}
+        | ${getFragmentTypes(
+          collectionsItem,
+          collectionWaitingTypes[action].compare.action,
+          collectionWaitingTypes[action].compare.actionType,
+        )}[]`;
       } else if (actionType === 'entryType' && collectionActionTypes[action]) {
-        const { visible, where, action: proxyAction } = collectionActionTypes[action];
-        types[itemFiledName][action] = `${baseLibraryDescription.collectionActionId}<
-        ${getFragmentTypes(collectionsItem, where, 'resultType')},
-        ${getFragmentTypes(collectionsItem, visible, 'resultType')},
-        ${getFragmentTypes(collectionsItem, proxyAction, 'entryType')}>`;
+        const actionDescriptor = collectionActionTypes[action];
+        const colletionItemType = getColletionActionType(collectionsItem, getFragmentTypes, actionDescriptor);
+
+        types[itemFiledName][action] = `${baseLibraryDescription.collectionActionId}<${colletionItemType}>`;
       } else {
         types[itemFiledName][action] = `${getFragmentTypes(collectionsItem, action, 'resultType')}[]`;
       }
@@ -146,20 +161,21 @@ function getFragmentTypes(instance, action, actionType) {
       const types = { [itemFiledName]: {} };
 
       if (collectionWaitingTypes[action]) {
-        const { where, visible, action: proxyAction, compare } = collectionWaitingTypes[action];
-        types[itemFiledName][action] = `${baseLibraryDescription.collectionCheckId}<
-        ${getElementType(collectionsItem, where, 'resultType')},
-        ${getElementType(collectionsItem, visible, 'resultType')},
-        ${getElementType(collectionsItem, proxyAction, 'entryType')},
-        ${getElementType(collectionsItem, compare, 'resultType')}
-      > | ${getElementType(collectionsItem, compare, 'resultType')}
-        | ${getElementType(collectionsItem, compare, 'resultType')}[]`;
+        const actionDescriptor = collectionWaitingTypes[action] as {
+          [k: string]: { action: string; actionType: string };
+        };
+
+        const colletionItemType = getColletionActionType(collectionsItem, getElementType, actionDescriptor);
+
+        types[itemFiledName][action] = `${baseLibraryDescription.collectionCheckId}<${colletionItemType}>
+        | ${getElementType(collectionsItem, actionDescriptor.compare.action, actionDescriptor.compare.actionType)}
+        | ${getElementType(collectionsItem, actionDescriptor.compare.action, actionDescriptor.compare.actionType)}[]`;
       } else if (actionType === 'entryType' && collectionActionTypes[action]) {
-        const { where, visible, action: proxyAction } = collectionActionTypes[action];
-        types[itemFiledName][action] = `${baseLibraryDescription.collectionActionId}<
-        ${getElementType(collectionsItem, where, 'resultType')},
-        ${getElementType(collectionsItem, visible, 'resultType')},
-        ${getElementType(collectionsItem, proxyAction, 'entryType')}>`;
+        const actionDescriptor = collectionActionTypes[action];
+
+        const colletionItemType = getColletionActionType(collectionsItem, getElementType, actionDescriptor);
+
+        types[itemFiledName][action] = `${baseLibraryDescription.collectionActionId}<${colletionItemType}>`;
       } else {
         types[itemFiledName][action] = `${getElementType(collectionsItem, action, 'resultType')}[]`;
       }
