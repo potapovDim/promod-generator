@@ -197,39 +197,39 @@ const baseElementsActionsDescription = {
 
 const collectionWaitingTypes = {
   waitForContentState: {
-    where: { action: 'waitForContentState', type: 'entryType' },
-    visible: { action: 'waitForVisibilityState', type: 'entryType' },
-    action: { action: 'get', type: 'entryType' },
-    compare: { action: 'get', type: 'resultType' },
+    where: { action: 'waitForContentState', actionType: 'entryType' },
+    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
+    action: { action: 'get', actionType: 'entryType' },
+    compare: { action: 'get', actionType: 'resultType' },
   },
   waitForVisibilityState: {
-    where: { action: 'waitForContentState', type: 'entryType' },
-    visible: { action: 'waitForVisibilityState', type: 'entryType' },
-    action: { action: 'isDisplayed', type: 'entryType' },
-    compare: { action: 'isDisplayed', type: 'resultType' },
+    where: { action: 'waitForContentState', actionType: 'entryType' },
+    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
+    action: { action: 'isDisplayed', actionType: 'entryType' },
+    compare: { action: 'isDisplayed', actionType: 'resultType' },
   },
 };
 
 const collectionActionTypes = {
   get: {
-    where: { action: 'waitForContentState', type: 'entryType' },
-    visible: { action: 'waitForVisibilityState', type: 'entryType' },
-    action: { action: 'get', type: 'entryType' },
+    where: { action: 'waitForContentState', actionType: 'entryType' },
+    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
+    action: { action: 'get', actionType: 'entryType' },
   },
   isDisplayed: {
-    where: { action: 'waitForContentState', type: 'entryType' },
-    visible: { action: 'waitForVisibilityState', type: 'entryType' },
-    action: { action: 'isDisplayed', type: 'entryType' },
+    where: { action: 'waitForContentState', actionType: 'entryType' },
+    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
+    action: { action: 'isDisplayed', actionType: 'entryType' },
   },
   sendKeys: {
-    where: { action: 'waitForContentState', type: 'entryType' },
-    visible: { action: 'waitForVisibilityState', type: 'entryType' },
-    action: { action: 'sendKeys', type: 'entryType' },
+    where: { action: 'waitForContentState', actionType: 'entryType' },
+    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
+    action: { action: 'sendKeys', actionType: 'entryType' },
   },
   click: {
-    where: { action: 'waitForContentState', type: 'entryType' },
-    visible: { action: 'waitForVisibilityState', type: 'entryType' },
-    action: { action: 'click', type: 'entryType' },
+    where: { action: 'waitForContentState', actionType: 'entryType' },
+    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
+    action: { action: 'click', actionType: 'entryType' },
   },
 };
 

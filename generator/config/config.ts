@@ -2,7 +2,11 @@
 import * as path from 'path';
 import * as fs from 'fs';
 
-import { validateBaseLibraryDescription } from './validator';
+import {
+  validateBaseLibraryDescription,
+  validateCollectionActionTypes,
+  validateCollectionWaitingTypes,
+} from './validator';
 
 const expectedConfigPath = path.resolve(process.cwd(), './promod.generator.config.js');
 const generalConfigPath = path.resolve(process.cwd(), './promod.system.config.js');
@@ -16,6 +20,8 @@ function getConfiguration() {
 
   /** @info validation section */
   validateBaseLibraryDescription(config.baseLibraryDescription);
+  validateCollectionActionTypes(config.collectionActionTypes);
+  validateCollectionWaitingTypes(config.collectionWaitingTypes);
   /** ________________________ */
 
   return config;
