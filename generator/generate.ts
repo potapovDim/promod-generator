@@ -15,16 +15,18 @@ const createPageStructure = (pagePath: string) => {
   const { pathToBase, baseLibraryDescription, promod = {} } = getConfiguration();
 
   const flowMatcher = promod.actionsDeclaration === 'declaration' ? flowDeclarationMatcher : flowExpressionMatcher;
+
   const frameworkPath = process.cwd();
   const pageRelativePath = path.basename(pagePath);
   const pageRelativeTsPath = pageRelativePath.replace('.ts', '');
-  const pathToLibFolder = pagePath
-    .replace(frameworkPath, '')
-    .replace(pageRelativePath, '')
-    .split('/')
-    .splice(2)
-    .map(() => '../')
-    .join('');
+  const pathToLibFolder =
+    pagePath
+      .replace(frameworkPath, '')
+      .replace(pageRelativePath, '')
+      .split('/')
+      .splice(2)
+      .map(() => '../')
+      .join('') || './';
 
   const pageModule = require(pagePath);
 
