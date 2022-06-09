@@ -1,4 +1,5 @@
 /* eslint-disable unicorn/prefer-switch, no-use-before-define, sonarjs/cognitive-complexity */
+import { safeHasOwnPropery } from 'sat-utils';
 import { createType } from './create.type';
 import { getConfiguration } from './config/config';
 import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
@@ -10,8 +11,11 @@ import {
   isCollectionWithItemFragment,
 } from './utils.collection';
 
-function couldIgnoreCompare(action: string, actionDescriptor) {
-  return Object.keys(actionDescriptor).some(key => actionDescriptor[key].action !== action);
+function isCollectionEntryType(actionDescriptor) {
+  // TOOD should be from config file
+  const entryTypeKeys = ['where', 'visible', 'action'];
+
+  return entryTypeKeys.every(key => safeHasOwnPropery(actionDescriptor, key));
 }
 
 function getColletionActionType(collectionsItem, getTypes, collectionActionType) {
@@ -26,15 +30,8 @@ function getColletionActionType(collectionsItem, getTypes, collectionActionType)
 }
 
 function getCollectionTypes(instance, action, actionType) {
-  const {
-    baseLibraryDescription,
-    resultActionsMap,
-    baseElementsActionsDescription,
-    collectionWaitingTypes,
-    collectionActionTypes,
-  } = getConfiguration();
-
-  if (resultActionsMap[action] === 'void' && actionType === 'resultType') return 'void';
+  const { baseLibraryDescription, baseElementsActionsDescription, collectionWaitingTypes, collectionActionTypes } =
+    getConfiguration();
 
   const collectionsItem = getCollectionItemInstance(instance);
 
@@ -55,29 +52,25 @@ function getCollectionTypes(instance, action, actionType) {
   if (collectionWaitingTypes[action]) {
     const actionDescriptor = collectionWaitingTypes[action];
 
-    const couldIgnoreCompares = couldIgnoreCompare(action, collectionWaitingTypes[action]);
-
-    if (couldIgnoreCompares) {
-      const { compare, ...rest } = collectionWaitingTypes[action];
-      const colletionItemType = getColletionActionType(collectionsItem, getTypeHandler, rest);
-      types[action] = `${baseLibraryDescription.collectionCheckId}<${colletionItemType}>`;
-    } else {
-      const colletionItemType = getColletionActionType(collectionsItem, getTypeHandler, actionDescriptor);
-      types[action] = `${baseLibraryDescription.collectionCheckId}<${colletionItemType}>
-      | ${getTypeHandler(collectionsItem, actionDescriptor.compare.action, actionDescriptor.compare.actionType)}
-      | ${getTypeHandler(collectionsItem, actionDescriptor.compare.action, actionDescriptor.compare.actionType)}[]`;
-    }
-  } else if (actionType === 'entryType' && collectionActionTypes[action]) {
-    const actionDescriptor = collectionActionTypes[action];
-
     const colletionItemType = getColletionActionType(collectionsItem, getTypeHandler, actionDescriptor);
+    types[action] = `${baseLibraryDescription.collectionCheckId}<${colletionItemType}>`;
 
-    types[action] = `${baseLibraryDescription.collectionActionId}<${colletionItemType}>`;
-  } else {
-    types[action] = `${getTypeHandler(collectionsItem, action, 'resultType')}[]`;
+    return types;
   }
 
-  return types;
+  const actionDescriptor = collectionActionTypes[action][actionType];
+  const isEntry = isCollectionEntryType(actionDescriptor);
+
+  if (isEntry) {
+    const colletionItemType = getColletionActionType(collectionsItem, getTypeHandler, actionDescriptor);
+    types[action] = `${baseLibraryDescription.collectionActionId}<${colletionItemType}>`;
+    return types;
+  } else {
+    types[action] = `${getTypeHandler(collectionsItem, actionDescriptor.action, 'resultType')}${
+      actionDescriptor.definitionType
+    }`;
+    return types;
+  }
 }
 
 function getFragmentTypes(instance, action, actionType) {
@@ -119,13 +112,15 @@ function getFragmentTypes(instance, action, actionType) {
       };
     });
 
-  const fragmentArrayFragments = instanceOwnKeys
+  const fragmentArrayItems = instanceOwnKeys
     .filter(itemFiledName => instance[itemFiledName].constructor.name.includes(baseLibraryDescription.collectionId))
     .filter(itemFiledName => {
       // logger here
       return (
-        isCollectionWithItemFragment(instance[itemFiledName]) &&
-        checkThatFragmentHasItemsToAction(getCollectionItemInstance(instance[itemFiledName]), action)
+        (isCollectionWithItemFragment(instance[itemFiledName]) &&
+          checkThatFragmentHasItemsToAction(getCollectionItemInstance(instance[itemFiledName]), action)) ||
+        (isCollectionWithItemBaseElement(instance[itemFiledName]) &&
+          checkThatElementHasAction(getCollectionItemInstance(instance[itemFiledName]), action))
       );
     })
     .map(itemFiledName => {
@@ -137,28 +132,7 @@ function getFragmentTypes(instance, action, actionType) {
       };
     });
 
-  const fragmentArrayElements = instanceOwnKeys
-    .filter(itemFiledName => instance[itemFiledName].constructor.name.includes(baseLibraryDescription.collectionId))
-    .filter(itemFiledName => {
-      // logger here
-      return (
-        isCollectionWithItemBaseElement(instance[itemFiledName]) &&
-        checkThatElementHasAction(instance[itemFiledName], action)
-      );
-    })
-    .map(itemFiledName => {
-      // logger here
-      return {
-        [itemFiledName]: {
-          [action]: createType(getCollectionTypes(instance[itemFiledName], action, actionType), action),
-        },
-      };
-    });
-
-  return createType(
-    [...fragmentElements, ...fragmentArrayElements, ...fragmentFragments, ...fragmentArrayFragments],
-    action,
-  );
+  return createType([...fragmentElements, ...fragmentArrayItems, ...fragmentFragments], action);
 }
 
 function getElementsTypes(instance, action, actionType) {

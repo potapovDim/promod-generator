@@ -21,8 +21,17 @@ const baseElementsActionsDescription = {
     waitForContentState: {
       entryType: 'GetRes',
     },
+    _where: {
+      resultType: 'GetRes',
+    },
+    _visible: {
+      resultType: 'IsDispRes',
+    },
   },
   Input: {
+    click: {
+      entryType: 'Action',
+    },
     get: {
       entryType: 'Action',
       resultType: 'GetRes',
@@ -40,24 +49,11 @@ const baseElementsActionsDescription = {
     waitForContentState: {
       entryType: 'GetRes',
     },
-  },
-  Radio: {
-    get: {
-      entryType: 'Action',
+    _where: {
       resultType: 'GetRes',
     },
-    isDisplayed: {
-      entryType: 'Action',
+    _visible: {
       resultType: 'IsDispRes',
-    },
-    sendKeys: {
-      entryType: 'SendKeys',
-    },
-    waitForVisibilityState: {
-      entryType: 'IsDispRes',
-    },
-    waitForContentState: {
-      entryType: 'GetRes',
     },
   },
   Select: {
@@ -78,24 +74,11 @@ const baseElementsActionsDescription = {
     waitForContentState: {
       entryType: 'GetRes',
     },
-  },
-  Toggle: {
-    get: {
-      entryType: 'Action',
+    _where: {
       resultType: 'GetRes',
     },
-    isDisplayed: {
-      entryType: 'Action',
+    _visible: {
       resultType: 'IsDispRes',
-    },
-    sendKeys: {
-      entryType: 'SendKeys',
-    },
-    waitForVisibilityState: {
-      entryType: 'IsDispRes',
-    },
-    waitForContentState: {
-      entryType: 'GetRes',
     },
   },
   Button: {
@@ -116,62 +99,11 @@ const baseElementsActionsDescription = {
     waitForContentState: {
       entryType: 'GetRes',
     },
-  },
-  Image: {
-    click: {
-      entryType: 'Action',
-    },
-    get: {
-      entryType: 'Action',
+    _where: {
       resultType: 'GetRes',
     },
-    isDisplayed: {
-      entryType: 'Action',
+    _visible: {
       resultType: 'IsDispRes',
-    },
-    waitForVisibilityState: {
-      entryType: 'IsDispRes',
-    },
-    waitForContentState: {
-      entryType: 'GetRes',
-    },
-  },
-  Link: {
-    click: {
-      entryType: 'Action',
-    },
-    get: {
-      entryType: 'Action',
-      resultType: 'GetRes',
-    },
-    isDisplayed: {
-      entryType: 'Action',
-      resultType: 'IsDispRes',
-    },
-    waitForVisibilityState: {
-      entryType: 'IsDispRes',
-    },
-    waitForContentState: {
-      entryType: 'GetRes',
-    },
-  },
-  Tab: {
-    click: {
-      entryType: 'Action',
-    },
-    get: {
-      entryType: 'Action',
-      resultType: 'GetRes',
-    },
-    isDisplayed: {
-      entryType: 'Action',
-      resultType: 'IsDispRes',
-    },
-    waitForVisibilityState: {
-      entryType: 'IsDispRes',
-    },
-    waitForContentState: {
-      entryType: 'GetRes',
     },
   },
   Text: {
@@ -192,44 +124,92 @@ const baseElementsActionsDescription = {
     waitForContentState: {
       entryType: 'GetRes',
     },
+    _where: {
+      resultType: 'GetRes',
+    },
+    _visible: {
+      resultType: 'IsDispRes',
+    },
   },
 };
 
 const collectionWaitingTypes = {
   waitForContentState: {
-    where: { action: 'waitForContentState', actionType: 'entryType' },
-    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
+    where: { action: '_where', actionType: 'resultType' },
+    visible: { action: '_visible', actionType: 'resultType' },
     action: { action: 'get', actionType: 'entryType' },
     compare: { action: 'get', actionType: 'resultType' },
   },
   waitForVisibilityState: {
-    where: { action: 'waitForContentState', actionType: 'entryType' },
-    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
+    where: { action: '_where', actionType: 'resultType' },
+    visible: { action: '_visible', actionType: 'resultType' },
     action: { action: 'isDisplayed', actionType: 'entryType' },
     compare: { action: 'isDisplayed', actionType: 'resultType' },
   },
 };
 
 const collectionActionTypes = {
+  _where: {
+    entryType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'get', actionType: 'entryType' },
+    },
+    resultType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'get', actionType: 'entryType' },
+    },
+  },
+  _visible: {
+    entryType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'isDisplayed', actionType: 'entryType' },
+    },
+    resultType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'isDisplayed', actionType: 'entryType' },
+    },
+  },
   get: {
-    where: { action: 'waitForContentState', actionType: 'entryType' },
-    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
-    action: { action: 'get', actionType: 'entryType' },
+    entryType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'get', actionType: 'entryType' },
+    },
+    resultType: {
+      action: 'get',
+      actionType: 'resultType',
+      definitionType: '[]',
+    },
   },
   isDisplayed: {
-    where: { action: 'waitForContentState', actionType: 'entryType' },
-    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
-    action: { action: 'isDisplayed', actionType: 'entryType' },
+    entryType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'isDisplayed', actionType: 'entryType' },
+    },
+    resultType: {
+      action: 'isDisplayed',
+      actionType: 'resultType',
+      definitionType: '[]',
+    },
   },
   sendKeys: {
-    where: { action: 'waitForContentState', actionType: 'entryType' },
-    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
-    action: { action: 'sendKeys', actionType: 'entryType' },
+    entryType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'sendKeys', actionType: 'entryType' },
+    },
   },
   click: {
-    where: { action: 'waitForContentState', actionType: 'entryType' },
-    visible: { action: 'waitForVisibilityState', actionType: 'entryType' },
-    action: { action: 'click', actionType: 'entryType' },
+    entryType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'click', actionType: 'entryType' },
+    },
   },
 };
 
@@ -278,12 +258,23 @@ const baseLibraryDescription = {
   getBaseElementFromCollectionByIndex: 'get'
 };
 
+const collectionDescription = {
+  action: '_action',
+  where: '_where',
+  visible: '_visible',
+  index: 'index',
+  length: 'length',
+};
+
+const ignoreGeneralActions = ['_where', '_visible'];
+
 const promod = {
   actionsDeclaration: 'declaration',
 };
 
 module.exports = {
   pathToBase: 'lib',
+  ignoreGeneralActions,
   promod,
   baseElementsActionsDescription,
   systemPropsList,
@@ -293,6 +284,7 @@ module.exports = {
   actionWithWaitOpts,
   prettyMethodName,
   baseLibraryDescription,
+  collectionDescription,
 };
 `;
 

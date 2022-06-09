@@ -12,7 +12,7 @@ const flowExpressionMatcher = /(?<=const ).*(?= = async)/gim;
 const flowDeclarationMatcher = /(?<=function ).*(?=\()/gim;
 
 const createPageStructure = (pagePath: string) => {
-  const { pathToBase, baseLibraryDescription, promod = {} } = getConfiguration();
+  const { pathToBase, baseLibraryDescription, promod = {}, ignoreGeneralActions = [] } = getConfiguration();
 
   const flowMatcher = promod.actionsDeclaration === 'declaration' ? flowDeclarationMatcher : flowExpressionMatcher;
 
@@ -55,10 +55,9 @@ import {
 
   const asActorAndPage = `on ${pageName}`;
 
-  const actions = getAllBaseActions();
+  const actions = getAllBaseActions().filter(action => !ignoreGeneralActions.includes(action));
 
   const randomResultsFlowsTemplate = getRandomResultsFlows(asActorAndPage, pageInstance);
-
   const interactionFlowsTemplate = actions.map(pageAction => getActionFlows(asActorAndPage, pageInstance, pageAction));
 
   const body = `${globalImport}

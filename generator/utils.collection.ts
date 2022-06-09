@@ -15,7 +15,7 @@ function getCollectionItemInstance(collectionInstance) {
 function isCollectionWithItemBaseElement(instance) {
   const { baseLibraryDescription, baseElementsActionsDescription } = getConfiguration();
 
-  return (
+  return !!(
     instance?.constructor?.name.includes(baseLibraryDescription.collectionId) &&
     baseElementsActionsDescription[instance[baseLibraryDescription.collectionItemId]?.name]
   );

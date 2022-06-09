@@ -35,6 +35,7 @@ function getFlowEntryType(dataObj) {
   const exectLikePart = `  except?: string | string[];
   like?: string | string[];
   _where?: ${_where}
+  _whereNot?: ${_where}
   _visible?: ${_visible}`;
 
   return _action
@@ -95,10 +96,11 @@ function createFlowTemplates(asActorAndPage, dataObj) {
   const argumentTemplate = getReturnArgumentTemplate(dataObj);
 
   const name = camelize(`${asActorAndPage} get random data from ${getPropPath(dataObj)}`);
-
   return `\n
 ${type}
-const ${name} = async function(data: ${typeName}): Promise<string> {
+const ${name} = async function(data: ${typeName} = {${
+    type.includes('field?') ? `field: '${finTypedObject(dataObj)._action[0]}'` : ''
+  }}): Promise<string> {
   const ${returnTemplate} = await page.${baseLibraryDescription.getDataMethod}(${argumentTemplate});
 
   const excludeValues = toArray(data.except);
