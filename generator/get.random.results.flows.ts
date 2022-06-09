@@ -35,7 +35,6 @@ function getFlowEntryType(dataObj) {
   const exectLikePart = `  except?: string | string[];
   like?: string | string[];
   _where?: ${_where}
-  _whereNot?: ${_where}
   _visible?: ${_visible}`;
 
   return _action
