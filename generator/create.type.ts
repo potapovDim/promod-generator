@@ -1,6 +1,6 @@
 function createType(itemObject: Array<{ [k: string]: { [k: string]: string } }> | { [k: string]: string }, action) {
   if (itemObject[action]) {
-    return `${itemObject[action]}\n`;
+    return `${itemObject[action]}`;
   }
 
   return (itemObject as Array<{ [k: string]: { [k: string]: string } }>)

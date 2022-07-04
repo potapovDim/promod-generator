@@ -35,6 +35,7 @@ function getPathesToCollections(childInstance, name) {
       const _where = getElementType(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
       const _visible = getElementType(collectionItemInstance, baseLibraryDescription.getVisibilityMethod, 'resultType');
 
+      // TODO this should be updated
       return { _action, _where, _visible };
     }
 
@@ -56,6 +57,7 @@ function getPathesToCollections(childInstance, name) {
       ) {
         const collectionItemInstance = getCollectionItemInstance(instance[field]);
 
+        // TODO this should be updated
         const _action = getFragmentInteractionFields(collectionItemInstance);
         const _where = getElementsTypes(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
         const _visible = getElementsTypes(
@@ -64,6 +66,7 @@ function getPathesToCollections(childInstance, name) {
           'resultType',
         );
 
+        // TODO this should be updated
         pathes[field] = {
           _visible,
           _where,
@@ -77,6 +80,7 @@ function getPathesToCollections(childInstance, name) {
       ) {
         const collectionItemInstance = getCollectionItemInstance(instance[field]);
 
+        // TODO this should be updated
         const _action = getFragmentBaseElementsFields(getCollectionItemInstance(instance[field]));
         const _where = getElementsTypes(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
         const _visible = getElementsTypes(
@@ -85,6 +89,7 @@ function getPathesToCollections(childInstance, name) {
           'resultType',
         );
 
+        // TODO this should be updated
         pathes[field] = {
           _visible,
           _where,
@@ -101,6 +106,7 @@ function getPathesToCollections(childInstance, name) {
         if (result) {
           const collectionItemInstance = getCollectionItemInstance(instance[field]);
 
+          // TODO this should be updated
           const _action = null;
           const _where = getElementType(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
           const _visible = getElementType(
@@ -109,6 +115,7 @@ function getPathesToCollections(childInstance, name) {
             'resultType',
           );
 
+          // TODO this should be updated
           pathes[field] = {
             _action,
             _visible,

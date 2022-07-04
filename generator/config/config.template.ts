@@ -133,44 +133,23 @@ const baseElementsActionsDescription = {
   },
 };
 
-const collectionWaitingTypes = {
+const baseCollectionActionsDescription = {
   waitForContentState: {
-    where: { action: '_where', actionType: 'resultType' },
-    visible: { action: '_visible', actionType: 'resultType' },
-    action: { action: 'get', actionType: 'entryType' },
-    compare: { action: 'get', actionType: 'resultType' },
+    entryType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'get', actionType: 'entryType' },
+      compare: { action: 'get', actionType: 'resultType' },
+      generic: 'CollectionWaitingType',
+    },
   },
   waitForVisibilityState: {
-    where: { action: '_where', actionType: 'resultType' },
-    visible: { action: '_visible', actionType: 'resultType' },
-    action: { action: 'isDisplayed', actionType: 'entryType' },
-    compare: { action: 'isDisplayed', actionType: 'resultType' },
-  },
-};
-
-const collectionActionTypes = {
-  _where: {
-    entryType: {
-      where: { action: '_where', actionType: 'resultType' },
-      visible: { action: '_visible', actionType: 'resultType' },
-      action: { action: 'get', actionType: 'entryType' },
-    },
-    resultType: {
-      where: { action: '_where', actionType: 'resultType' },
-      visible: { action: '_visible', actionType: 'resultType' },
-      action: { action: 'get', actionType: 'entryType' },
-    },
-  },
-  _visible: {
     entryType: {
       where: { action: '_where', actionType: 'resultType' },
       visible: { action: '_visible', actionType: 'resultType' },
       action: { action: 'isDisplayed', actionType: 'entryType' },
-    },
-    resultType: {
-      where: { action: '_where', actionType: 'resultType' },
-      visible: { action: '_visible', actionType: 'resultType' },
-      action: { action: 'isDisplayed', actionType: 'entryType' },
+      compare: { action: 'isDisplayed', actionType: 'resultType' },
+      generic: 'CollectionWaitingType',
     },
   },
   get: {
@@ -178,11 +157,11 @@ const collectionActionTypes = {
       where: { action: '_where', actionType: 'resultType' },
       visible: { action: '_visible', actionType: 'resultType' },
       action: { action: 'get', actionType: 'entryType' },
+      generic: 'CollectionActionType',
     },
     resultType: {
-      action: 'get',
-      actionType: 'resultType',
-      definitionType: '[]',
+      action: { action: 'get', actionType: 'resultType' },
+      endType: '[]',
     },
   },
   isDisplayed: {
@@ -190,11 +169,11 @@ const collectionActionTypes = {
       where: { action: '_where', actionType: 'resultType' },
       visible: { action: '_visible', actionType: 'resultType' },
       action: { action: 'isDisplayed', actionType: 'entryType' },
+      generic: 'CollectionActionType',
     },
     resultType: {
-      action: 'isDisplayed',
-      actionType: 'resultType',
-      definitionType: '[]',
+      action: { action: 'isDisplayed', actionType: 'resultType' },
+      endType: '[]',
     },
   },
   sendKeys: {
@@ -202,6 +181,7 @@ const collectionActionTypes = {
       where: { action: '_where', actionType: 'resultType' },
       visible: { action: '_visible', actionType: 'resultType' },
       action: { action: 'sendKeys', actionType: 'entryType' },
+      generic: 'CollectionActionType',
     },
   },
   click: {
@@ -209,6 +189,35 @@ const collectionActionTypes = {
       where: { action: '_where', actionType: 'resultType' },
       visible: { action: '_visible', actionType: 'resultType' },
       action: { action: 'click', actionType: 'entryType' },
+      generic: 'CollectionActionType',
+    },
+  },
+  _where: {
+    entryType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'get', actionType: 'entryType' },
+      generic: 'CollectionActionType',
+    },
+    resultType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'get', actionType: 'entryType' },
+      generic: 'CollectionActionType',
+    },
+  },
+  _visible: {
+    entryType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'isDisplayed', actionType: 'entryType' },
+      generic: 'CollectionActionType',
+    },
+    resultType: {
+      where: { action: '_where', actionType: 'resultType' },
+      visible: { action: '_visible', actionType: 'resultType' },
+      action: { action: 'isDisplayed', actionType: 'entryType' },
+      generic: 'CollectionActionType',
     },
   },
 };
@@ -251,8 +260,8 @@ const baseLibraryDescription = {
   collectionItemId: 'InstanceType',
   collectionRootElementsId: 'rootElements',
   waitOptionsId: 'IWaitOpts',
-  collectionActionId: 'ICollectionAction',
-  collectionCheckId: 'ICollectionCheck',
+  collectionActionId: 'CollectionActionType',
+  collectionCheckId: 'CollectionWaitingType',
   getDataMethod: 'get',
   getVisibilityMethod: 'isDisplayed',
   getBaseElementFromCollectionByIndex: 'get'
@@ -266,20 +275,16 @@ const collectionDescription = {
   length: 'length',
 };
 
-const ignoreGeneralActions = ['_where', '_visible'];
-
 const promod = {
   actionsDeclaration: 'declaration',
 };
 
 module.exports = {
   pathToBase: 'lib',
-  ignoreGeneralActions,
   promod,
   baseElementsActionsDescription,
+  baseCollectionActionsDescription,
   systemPropsList,
-  collectionWaitingTypes,
-  collectionActionTypes,
   resultActionsMap,
   actionWithWaitOpts,
   prettyMethodName,

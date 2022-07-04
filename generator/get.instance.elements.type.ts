@@ -1,5 +1,4 @@
 /* eslint-disable unicorn/prefer-switch, no-use-before-define, sonarjs/cognitive-complexity */
-import { safeHasOwnPropery } from 'sat-utils';
 import { createType } from './create.type';
 import { getConfiguration } from './config/config';
 import { checkThatFragmentHasItemsToAction } from './check.that.action.exists';
@@ -11,27 +10,20 @@ import {
   isCollectionWithItemFragment,
 } from './utils.collection';
 
-function isCollectionEntryType(actionDescriptor) {
-  // TOOD should be from config file
-  const entryTypeKeys = ['where', 'visible', 'action'];
-
-  return entryTypeKeys.every(key => safeHasOwnPropery(actionDescriptor, key));
-}
-
 function getColletionActionType(collectionsItem, getTypes, collectionActionType) {
   return Object.keys(collectionActionType).reduce((typeString, actionKey, index, allActions) => {
     const actionDescriptor = collectionActionType[actionKey] as { action: string; actionType: string };
-    typeString +=
-      index === 0 || allActions.length - 1 !== index
-        ? `${getTypes(collectionsItem, actionDescriptor.action, actionDescriptor.actionType)},`
-        : `${getTypes(collectionsItem, actionDescriptor.action, actionDescriptor.actionType)}`;
-    return typeString;
+
+    if (allActions.length - 1 === index) {
+      return (typeString += `${getTypes(collectionsItem, actionDescriptor.action, actionDescriptor.actionType)}`);
+    }
+
+    return (typeString += `${getTypes(collectionsItem, actionDescriptor.action, actionDescriptor.actionType)},`);
   }, '');
 }
 
 function getCollectionTypes(instance, action, actionType) {
-  const { baseLibraryDescription, baseElementsActionsDescription, collectionWaitingTypes, collectionActionTypes } =
-    getConfiguration();
+  const { baseCollectionActionsDescription, baseElementsActionsDescription } = getConfiguration();
 
   const collectionsItem = getCollectionItemInstance(instance);
 
@@ -49,28 +41,19 @@ function getCollectionTypes(instance, action, actionType) {
 
   const types = {};
 
-  if (collectionWaitingTypes[action]) {
-    const actionDescriptor = collectionWaitingTypes[action];
+  const { generic, endType, ...actionDescriptor } = baseCollectionActionsDescription[action][actionType];
 
-    const colletionItemType = getColletionActionType(collectionsItem, getTypeHandler, actionDescriptor);
-    types[action] = `${baseLibraryDescription.collectionCheckId}<${colletionItemType}>`;
+  let colletionItemType = getColletionActionType(collectionsItem, getTypeHandler, actionDescriptor);
 
-    return types;
+  if (generic) {
+    colletionItemType = `${generic}<${colletionItemType}>`;
+  }
+  if (endType) {
+    colletionItemType = `${colletionItemType}${endType}`;
   }
 
-  const actionDescriptor = collectionActionTypes[action][actionType];
-  const isEntry = isCollectionEntryType(actionDescriptor);
-
-  if (isEntry) {
-    const colletionItemType = getColletionActionType(collectionsItem, getTypeHandler, actionDescriptor);
-    types[action] = `${baseLibraryDescription.collectionActionId}<${colletionItemType}>`;
-    return types;
-  } else {
-    types[action] = `${getTypeHandler(collectionsItem, actionDescriptor.action, 'resultType')}${
-      actionDescriptor.definitionType
-    }`;
-    return types;
-  }
+  types[action] = colletionItemType;
+  return types;
 }
 
 function getFragmentTypes(instance, action, actionType) {

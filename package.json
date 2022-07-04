@@ -1,6 +1,6 @@
 {
   "name": "promod-generator",
-  "version": "0.0.1-rc1",
+  "version": "0.0.1-rc2",
   "description": "promod generator",
   "bin": {
     "promod-generator": "./bin/cli.js"
