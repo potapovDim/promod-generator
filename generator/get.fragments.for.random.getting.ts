@@ -17,10 +17,26 @@ import {
   isCollectionWithItemFragment,
 } from './utils.collection';
 
-function checThatAllFragmentFieldsAreBaseElements(instance) {
-  const interactionFields = getFragmentInteractionFields(instance);
+function getCollectionItemTypes(collectionItemInstance) {
+  const { collectionRandomDataDescription } = getConfiguration();
 
-  return interactionFields.every(field => checkThatBaseElement(instance[field]));
+  const getType = checkThatBaseElement(collectionItemInstance) ? getElementType : getElementsTypes;
+
+  const instanceInteractionFields = getFragmentInteractionFields(collectionItemInstance);
+
+  const _fields = instanceInteractionFields.length ? instanceInteractionFields : null;
+
+  const types = Object.keys(collectionRandomDataDescription).reduce((description, key) => {
+    description[key] = getType(
+      collectionItemInstance,
+      collectionRandomDataDescription[key].action,
+      collectionRandomDataDescription[key].actionType,
+    );
+
+    return description;
+  }, {});
+
+  return { _fields, ...types };
 }
 
 function getPathesToCollections(childInstance, name) {
@@ -31,12 +47,8 @@ function getPathesToCollections(childInstance, name) {
 
     if (isCollectionWithItemBaseElement(instance)) {
       const collectionItemInstance = getCollectionItemInstance(instance);
-      const _action = null;
-      const _where = getElementType(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
-      const _visible = getElementType(collectionItemInstance, baseLibraryDescription.getVisibilityMethod, 'resultType');
 
-      // TODO this should be updated
-      return { _action, _where, _visible };
+      return getCollectionItemTypes(collectionItemInstance);
     }
 
     const interactionFields = getFragmentInteractionFields(instance);
@@ -52,77 +64,16 @@ function getPathesToCollections(childInstance, name) {
           return pathes;
         }
       } else if (
-        isCollectionWithItemFragment(instance[field]) &&
-        checThatAllFragmentFieldsAreBaseElements(getCollectionItemInstance(instance[field]))
+        (isCollectionWithItemFragment(instance[field]) &&
+          getFragmentBaseElementsFields(getCollectionItemInstance(instance[field])).length) ||
+        (isCollectionWithItemBaseElement(instance[field]) &&
+          checkThatElementHasAction(getCollectionItemInstance(instance[field]), baseLibraryDescription.getDataMethod))
       ) {
         const collectionItemInstance = getCollectionItemInstance(instance[field]);
 
-        // TODO this should be updated
-        const _action = getFragmentInteractionFields(collectionItemInstance);
-        const _where = getElementsTypes(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
-        const _visible = getElementsTypes(
-          collectionItemInstance,
-          baseLibraryDescription.getVisibilityMethod,
-          'resultType',
-        );
-
-        // TODO this should be updated
-        pathes[field] = {
-          _visible,
-          _where,
-          _action,
-        };
+        pathes[field] = getCollectionItemTypes(collectionItemInstance);
 
         return pathes;
-      } else if (
-        isCollectionWithItemFragment(instance[field]) &&
-        getFragmentBaseElementsFields(getCollectionItemInstance(instance[field])).length
-      ) {
-        const collectionItemInstance = getCollectionItemInstance(instance[field]);
-
-        // TODO this should be updated
-        const _action = getFragmentBaseElementsFields(getCollectionItemInstance(instance[field]));
-        const _where = getElementsTypes(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
-        const _visible = getElementsTypes(
-          collectionItemInstance,
-          baseLibraryDescription.getVisibilityMethod,
-          'resultType',
-        );
-
-        // TODO this should be updated
-        pathes[field] = {
-          _visible,
-          _where,
-          _action,
-        };
-
-        return pathes;
-      } else if (isCollectionWithItemBaseElement(instance[field])) {
-        const result = checkThatElementHasAction(
-          instance[field][baseLibraryDescription.collectionItemId]?.name,
-          baseLibraryDescription.getDataMethod,
-        );
-
-        if (result) {
-          const collectionItemInstance = getCollectionItemInstance(instance[field]);
-
-          // TODO this should be updated
-          const _action = null;
-          const _where = getElementType(collectionItemInstance, baseLibraryDescription.getDataMethod, 'resultType');
-          const _visible = getElementType(
-            collectionItemInstance,
-            baseLibraryDescription.getVisibilityMethod,
-            'resultType',
-          );
-
-          // TODO this should be updated
-          pathes[field] = {
-            _action,
-            _visible,
-            _where,
-          };
-          return pathes;
-        }
       }
     }
   }

@@ -267,6 +267,21 @@ const baseLibraryDescription = {
   getBaseElementFromCollectionByIndex: 'get'
 };
 
+const collectionRandomDataDescription = {
+  _where: {
+    action: '_where',
+    actionType: 'resultType',
+  },
+  _visible: {
+    action: '_visible',
+    actionType: 'resultType',
+  },
+  _whereNot: {
+    action: '_where',
+    actionType: 'resultType',
+  },
+};
+
 const collectionDescription = {
   action: '_action',
   where: '_where',
@@ -290,6 +305,7 @@ module.exports = {
   prettyMethodName,
   baseLibraryDescription,
   collectionDescription,
+  collectionRandomDataDescription,
 };
 `;
 

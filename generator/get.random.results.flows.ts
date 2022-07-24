@@ -1,7 +1,13 @@
 /* eslint-disable sonarjs/no-nested-template-literals */
-import { isObject, isArray, camelize } from 'sat-utils';
+import { isObject, isArray, camelize, isNotEmptyObject } from 'sat-utils';
 import { getConfiguration } from './config/config';
 import { getPathesToCollections } from './get.fragments.for.random.getting';
+
+function isCollectionDescription(data) {
+  const { collectionRandomDataDescription } = getConfiguration();
+
+  return isNotEmptyObject(data) && Object.keys(collectionRandomDataDescription).some(key => key in data);
+}
 
 function getFieldsEnumList(fieldsArr: string[]) {
   return fieldsArr.reduce((enumList, item, index, arr) => {
@@ -11,7 +17,7 @@ function getFieldsEnumList(fieldsArr: string[]) {
 }
 
 function getPropPath(dataObj) {
-  if (isObject(dataObj) && !('_where' in (dataObj as object))) {
+  if (!isCollectionDescription(dataObj)) {
     return `${Object.keys(dataObj)[0]} ${getPropPath(dataObj[Object.keys(dataObj)[0]])}`;
   }
 
@@ -19,29 +25,35 @@ function getPropPath(dataObj) {
 }
 
 function finTypedObject(dataObj) {
+  // TODO check this function
   for (const value of Object.values(dataObj)) {
-    if (isObject(value) && '_where' in (value as object)) {
-      return value;
-    }
-    return finTypedObject(value);
+    return isCollectionDescription(value) ? value : finTypedObject(value);
   }
 }
 
 function getFlowEntryType(dataObj) {
   const typeName = `T${camelize(getPropPath(dataObj))}`;
 
-  const { _action, _where, _visible } = finTypedObject(dataObj);
+  const { _fields, ...restCollectionDescription } = finTypedObject(dataObj);
+
+  const descriptionType = Object.keys(restCollectionDescription).reduce(
+    (descriptionType, key, index, allDescriptionKeys) => {
+      const endString = index !== allDescriptionKeys.length - 1 && allDescriptionKeys.length > 1 ? '\n' : '';
+
+      return (descriptionType += `${key}?: ${restCollectionDescription[key]}${endString}`);
+    },
+    ``,
+  );
 
   const exectLikePart = `  except?: string | string[];
   like?: string | string[];
-  _where?: ${_where}
-  _visible?: ${_visible}`;
+  ${descriptionType}`;
 
-  return _action
+  return _fields
     ? {
         typeName,
         type: `type ${typeName} = {
-  field?: ${getFieldsEnumList(_action)};
+  field?: ${getFieldsEnumList(_fields)};
 ${exectLikePart}
 };`,
       }
@@ -54,14 +66,25 @@ ${exectLikePart}
 }
 
 function getReturnArgumentTemplate(dataObj) {
+  const { collectionDescription } = getConfiguration();
+  const { _fields, ...restCollectionDescription } = finTypedObject(dataObj);
+
+  const descriptionType = Object.keys(restCollectionDescription).reduce(
+    (descriptionType, key, index, allDescriptionKeys) => {
+      const endString = index !== allDescriptionKeys.length - 1 && allDescriptionKeys.length > 1 ? ', ' : ' ';
+
+      return (descriptionType += `${key}: data.${key}${endString}`);
+    },
+    ``,
+  );
+
   return Object.keys(dataObj).reduce((template, key) => {
-    // TODO this approach should be updated to config based approach
-    if (isObject(dataObj[key]) && !('_where' in dataObj[key])) {
+    if (isObject(dataObj[key]) && !isCollectionDescription(dataObj[key])) {
       return `${template} ${key}: ${getReturnArgumentTemplate(dataObj[key])} }`;
-    } else if ('_action' in dataObj[key] && isArray(dataObj[key]['_action'])) {
-      return `${template} ${key}: { _action: { [data.field]: null }, _where: data._where, _visible: data._visible } }`;
+    } else if (_fields) {
+      return `${template} ${key}: { ${collectionDescription.action}: { [data.field]: null }, ${descriptionType} } }`;
     } else {
-      return `${template} ${key}: { _action: null, _where: data._where, _visible: data._visible } }`;
+      return `${template} ${key}: { ${collectionDescription.action}: null, ${descriptionType} } }`;
     }
   }, '{');
 }
@@ -71,7 +94,7 @@ function getReturnTemplateAndLastKey(dataObj) {
 
   function getReturnTemplate(dataObj) {
     return Object.keys(dataObj).reduce((template, key) => {
-      if (isObject(dataObj[key]) && !('_where' in dataObj[key])) {
+      if (isObject(dataObj[key]) && !isCollectionDescription(dataObj[key])) {
         return `${template} ${key}: ${getReturnTemplate(dataObj[key])} }`;
       } else {
         lastKey = key;
@@ -98,7 +121,7 @@ function createFlowTemplates(asActorAndPage, dataObj) {
   return `\n
 ${type}
 const ${name} = async function(data: ${typeName} = {${
-    type.includes('field?') ? `field: '${finTypedObject(dataObj)._action[0]}'` : ''
+    type.includes('field?') ? `field: '${finTypedObject(dataObj)._fields[0]}'` : ''
   }}): Promise<string> {
   const ${returnTemplate} = await page.${baseLibraryDescription.getDataMethod}(${argumentTemplate});
 
