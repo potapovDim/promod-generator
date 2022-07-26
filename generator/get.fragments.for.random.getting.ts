@@ -45,10 +45,8 @@ function getPathesToCollections(childInstance, name) {
   function getPathToListIfExists(instance) {
     const pathes = {};
 
-    if (isCollectionWithItemBaseElement(instance)) {
-      const collectionItemInstance = getCollectionItemInstance(instance);
-
-      return getCollectionItemTypes(collectionItemInstance);
+    if (isCollectionWithItemBaseElement(instance) || isCollectionWithItemFragment(instance)) {
+      return getCollectionItemTypes(getCollectionItemInstance(instance));
     }
 
     const interactionFields = getFragmentInteractionFields(instance);

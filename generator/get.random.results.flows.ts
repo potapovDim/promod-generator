@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/no-nested-template-literals */
-import { isObject, isArray, camelize, isNotEmptyObject } from 'sat-utils';
+import { isObject, camelize, isNotEmptyObject } from 'sat-utils';
 import { getConfiguration } from './config/config';
 import { getPathesToCollections } from './get.fragments.for.random.getting';
 

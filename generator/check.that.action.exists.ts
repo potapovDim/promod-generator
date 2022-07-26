@@ -12,7 +12,11 @@ function checkThatFragmentHasItemsToAction(instance, action: string) {
   const { baseElementsActionsDescription, baseLibraryDescription } = getConfiguration();
 
   if (isCollectionWithItemBaseElement(instance)) {
-    return checkThatElementHasAction(instance[baseLibraryDescription.collectionItemId]?.name, action);
+    return checkThatElementHasAction(getCollectionItemInstance(instance), action);
+  }
+
+  if (isCollectionWithItemFragment(instance)) {
+    return checkThatFragmentHasItemsToAction(getCollectionItemInstance(instance), action);
   }
 
   const interactionFields = getFragmentInteractionFields(instance);
