@@ -1,7 +1,7 @@
 /* eslint-disable sonarjs/cognitive-complexity, no-console*/
 
 // TODO how to handle collection in collection
-
+import { isNotEmptyObject } from 'sat-utils';
 import { getConfiguration } from './config/config';
 import { getElementsTypes } from './get.instance.elements.type';
 import { getFragmentInteractionFields } from './utils';
@@ -51,15 +51,16 @@ function getPathesToCollections(childInstance, name) {
 
     const interactionFields = getFragmentInteractionFields(instance);
 
+    console.log(interactionFields);
+
     for (const field of interactionFields) {
       const childConstructorName = instance[field].constructor.name;
 
       if (childConstructorName.includes(baseLibraryDescription.fragmentId)) {
         const result = getPathToListIfExists(instance[field]);
 
-        if (result) {
+        if (isNotEmptyObject(result)) {
           pathes[field] = result;
-          return pathes;
         }
       } else if (
         (isCollectionWithItemFragment(instance[field]) &&
@@ -70,15 +71,15 @@ function getPathesToCollections(childInstance, name) {
         const collectionItemInstance = getCollectionItemInstance(instance[field]);
 
         pathes[field] = getCollectionItemTypes(collectionItemInstance);
-
-        return pathes;
       }
     }
+
+    return pathes;
   }
 
   const result = getPathToListIfExists(childInstance);
 
-  if (result) return { [name]: result };
+  if (isNotEmptyObject(result)) return { [name]: result };
 }
 
 export { getPathesToCollections };

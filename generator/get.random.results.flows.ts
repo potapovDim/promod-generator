@@ -1,13 +1,8 @@
 /* eslint-disable sonarjs/no-nested-template-literals */
-import { isObject, camelize, isNotEmptyObject } from 'sat-utils';
+import { isObject, camelize } from 'sat-utils';
 import { getConfiguration } from './config/config';
 import { getPathesToCollections } from './get.fragments.for.random.getting';
-
-function isCollectionDescription(data) {
-  const { collectionRandomDataDescription } = getConfiguration();
-
-  return isNotEmptyObject(data) && Object.keys(collectionRandomDataDescription).some(key => key in data);
-}
+import { isCollectionDescription, toRandomTemplateFormat } from './utils.random';
 
 function getFieldsEnumList(fieldsArr: string[]) {
   return fieldsArr.reduce((enumList, item, index, arr) => {
@@ -146,7 +141,7 @@ function getRandomResultsFlows(asActorAndPage, pageInstance) {
 
   const randomResultData = interactionFields
     .filter(field => getPathesToCollections(pageInstance[field], field))
-    .map(field => getPathesToCollections(pageInstance[field], field));
+    .flatMap(field => toRandomTemplateFormat(getPathesToCollections(pageInstance[field], field)));
 
   return randomResultData.reduce((flows, dataObject) => {
     return `${flows}${createFlowTemplates(asActorAndPage, dataObject)}`;
